@@ -97,6 +97,57 @@ DROP TABLE usuarios;
 
 *Nota: POSTGRES_DB no es obligatorio. Se conecta a la base de datos por defecto "postgres" y desde ahí puedes crear tus propias bases de datos.*
 
+### Ejecutar MongoDB genérico
+
+Comando simple para ejecutar MongoDB:
+
+```bash
+docker run -d \
+  --name mongo-container \
+  -e MONGO_INITDB_ROOT_USERNAME=admin \
+  -e MONGO_INITDB_ROOT_PASSWORD=matichelo17 \
+  -p 27017:27017 \
+  mongo:7.0
+```
+
+**Conectar:**
+```bash
+mongosh "mongodb://admin:matichelo17@localhost:27017"
+```
+
+**Comandos básicos MongoDB:**
+```javascript
+// Ver bases de datos
+show dbs
+
+// Crear/usar base de datos
+use mi_db
+
+// Ver colecciones (tablas)
+show collections
+
+// Crear colección e insertar documento
+db.usuarios.insertOne({id: 1, nombre: "Juan"})
+
+// Ver documentos
+db.usuarios.find()
+
+// Buscar documentos
+db.usuarios.find({nombre: "Juan"})
+
+// Actualizar documento
+db.usuarios.updateOne({id: 1}, {$set: {nombre: "Juan Carlos"}})
+
+// Eliminar documento
+db.usuarios.deleteOne({id: 1})
+
+// Eliminar colección
+db.usuarios.drop()
+
+// Eliminar base de datos
+db.dropDatabase()
+```
+
 ### Comandos básicos:
 
 ```bash
@@ -106,12 +157,15 @@ docker ps
 # Parar contenedores
 docker stop mysql-container
 docker stop postgres-container
+docker stop mongo-container
 
 # Iniciar contenedores
 docker start mysql-container
 docker start postgres-container
+docker start mongo-container
 
 # Eliminar contenedores
 docker rm mysql-container
 docker rm postgres-container
+docker rm mongo-container
 ```
