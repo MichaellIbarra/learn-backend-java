@@ -47,7 +47,91 @@
     - Arquitectura distribuida: Cada microservicio dispone de su propia base de datos. Los modelos de software distribuido se han visto respaldados por la proliferación de proveedores Cloud, que allanan el camino a la puesta en marcha este tipo de arquitecturas.
     - Tecnología heterogénea: Cada microservicio puede ser desarrollado con diferentes lenguajes de programación, frameworks o bases de datos, según las necesidades específicas del servicio.
 
+## Eureka Server
+- Es un servicio de descrubrimiento desarrollado por Netflix que permite a los microservicios para el registro y localización, balanceo de carga y tolerancia a fallos. La función de Eureka es registrar las diferentes instancias de microservicios existentes, su localización, estado, metadatos, etc. De esta forma, cuando un microservicio necesita comunicarse con otro, puede consultar a Eureka para obtener la información necesaria para establecer la conexión.
+    ### Funcionalidades principales de Eureka Server
+    - Registro incial: Ubicación centralizada donde los microservicios se registran al iniciarse, disponibilidad, metadatos, etc.
+    - Cada heartbeat (30s): Los microservicios envían señales periódicas para indicar que están activos.
+    - 3 Heartbeat fallidos: Si un microservicio no envía señales, Eureka lo marca como no disponible.
+    - Client-side Discovery: Los microservicios consultan a Eureka para obtener la lista de servicios disponibles.
 
+### Eureka vs Orquestadores de Contenedores (Docker Compose, Kubernetes)
+
+**¿Se puede reemplazar Eureka con Docker Compose/Kubernetes?**
+La respuesta depende del contexto y las necesidades:
+
+#### **Diferencias Fundamentales:**
+
+**Eureka Server:**
+- **Service Discovery a nivel de aplicación**: Eureka funciona dentro del código de la aplicación Java/Spring
+- **Runtime Discovery**: Los servicios se registran dinámicamente durante la ejecución
+- **Client-side Discovery**: Cada microservicio obtiene la lista de servicios y decide a cuál conectarse
+- **Language específico**: Principalmente para ecosistema Spring/Java
+- **Load Balancing a nivel de aplicación**: Con Ribbon/Spring Cloud LoadBalancer
+
+**Docker Compose:**
+- **Orquestación básica**: Maneja contenedores en una sola máquina
+- **Service Discovery por nombres**: Los contenedores se comunican por nombres de servicios
+- **Enfoque estático**: Configuración definida en el `docker-compose.yml`
+- **No hay service registry dinámico**: Los servicios se conocen por configuración
+- **Ideal para desarrollo local**
+
+**Kubernetes:**
+- **Orquestación avanzada**: Gestión de contenedores en clúster
+- **Service Discovery nativo**: A través de Services, Endpoints y DNS interno
+- **Load Balancing automático**: Con Services y Ingress Controllers
+- **Health Checks**: Con Readiness y Liveness probes
+- **Auto-scaling**: Horizontal Pod Autoscaler (HPA)
+- **Language agnóstico**: Funciona con cualquier aplicación en contenedor
+
+#### **Escenarios de Uso:**
+
+**Usa Eureka cuando:**
+- Trabajas principalmente con Spring Boot/Java
+- Necesitas service discovery a nivel de aplicación
+- Requieres integración profunda con el ecosistema Spring Cloud
+- Tienes lógica de balanceo de carga específica en la aplicación
+- Los servicios corren en diferentes infraestructuras (no solo contenedores)
+
+**Usa Docker Compose cuando:**
+- Desarrollo local de microservicios
+- Aplicaciones simples con pocos servicios
+- No necesitas escalabilidad avanzada
+- Prototipado rápido
+
+**Usa Kubernetes cuando:**
+- Producción con múltiples servicios
+- Necesitas auto-scaling y alta disponibilidad
+- Trabajas con múltiples lenguajes de programación
+- Requieres gestión avanzada de recursos
+- Tienes equipos DevOps dedicados
+
+#### **¿Pueden coexistir?**
+**Sí, y es común en arquitecturas híbridas:**
+- Kubernetes maneja la infraestructura y orquestación
+- Eureka maneja service discovery específico de Spring
+- Ejemplo: Eureka corriendo como un pod en Kubernetes
+
+#### **Migración de Eureka a Kubernetes:**
+```yaml
+# En lugar de Eureka, en Kubernetes usarías:
+apiVersion: v1
+kind: Service
+metadata:
+  name: user-service
+spec:
+  selector:
+    app: user-service
+  ports:
+    - port: 8080
+      targetPort: 8080
+```
+
+**Conclusión:** 
+- **Para nuevos proyectos**: Considera Kubernetes como primera opción
+- **Para proyectos Spring existentes**: Eureka sigue siendo válido
+- **Para desarrollo local**: Docker Compose es suficiente
+- La decisión depende del stack tecnológico, equipo y requisitos de infraestructura
 
 
 ## Términos comunes
@@ -86,3 +170,6 @@
 - list: estructura de datos en Java que alamacena una colección ordenada de elementos, permitiendo duplicados y acceso secuencial a través de índices.
 - arraylist: implementación de la interfaz List en Java que utiliza un array dinámico para almacenar elementos, permitiendo acceso rápido y eficiente a los mismos.
 - HashMap, Hashtable: ambas son implementaciones de la interfaz Map en Java que almacenan pares clave-valor. La principal diferencia es que HashMap permite claves y valores nulos y no es sincronizado, mientras que Hashtable no permite nulos y es sincronizado, lo que lo hace seguro para el acceso concurrente.
+- servicio de descrubrimiento: componente en una arquitectura de microservicios que permite a los servicios registrarse y localizarse entre sí dinámicamente, facilitando la comunicación y el equilibrio de carga.
+- cloud bootstrap: proceso inicial en Spring Cloud que carga la configuración y prepara el entorno antes de que la aplicación principal se inicie.
+- heartbeat: señal periódica enviada por un sistema o componente para indicar que está activo y funcionando correctamente.
