@@ -133,6 +133,33 @@ spec:
 - **Para desarrollo local**: Docker Compose es suficiente
 - La decisión depende del stack tecnológico, equipo y requisitos de infraestructura
 
+## Rest Template
+- Es una clase proporcionanda por Spring Framework que facilita la comunicación entre aplicaciones a través de servicios web RESTful. Permite realizar solicitudes HTTP (GET, POST, PUT, DELETE, etc.) y manejar las respuestas de manera sencilla, rest template la comunición lo hace de manera explícita que se tiene que crear y gestionar las solicitudes HTTP manualmente, en cada llamada se especifica la URL del servicio al que se desea acceder.
+    ### Características principales de Rest Template
+    - Simplificación de solicitudes HTTP: Proporciona métodos convenientes para realizar solicitudes HTTP sin necesidad de manejar manualmente la conexión y la serialización/deserialización de datos.
+    - Soporte para diferentes formatos de datos: Permite trabajar con JSON, XML y otros formatos de datos.
+## Feign Client
+- Es una biblioteca de cliente HTTP declarativa desarrollada por Netflix que facilita la comunicación entre microservicios en una arquitectura distribuida. Feign Client permite definir interfaces Java que representan los servicios remotos, y Spring Cloud se encarga de generar automáticamente las implementaciones de estas interfaces en tiempo de ejecución, lo que simplifica la comunicación entre microservicios al abstraer los detalles de las solicitudes HTTP.
+    ### Características principales de Feign Client
+    - Declarativo: Permite definir clientes HTTP mediante interfaces Java anotadas, lo que hace que el código sea más limpio y fácil de mantener.
+    - Integración con Spring Cloud: Se integra perfectamente con otros componentes de Spring Cloud, como Eureka para el descubrimiento de servicios y Ribbon para el balanceo de carga.
+    - Soporte para diferentes métodos HTTP: Permite realizar solicitudes GET, POST, PUT, DELETE, etc., mediante anotaciones en la interfaz.
+    - Manejo automático de errores: Proporciona mecanismos para manejar errores y excepciones de manera sencilla.
+## Rest Template vs Feign Client
+- **Rest Template**:
+    - Enfoque imperativo: Requiere escribir código explícito para realizar solicitudes HTTP.
+    - Mayor control: Permite un control detallado sobre las solicitudes y respuestas HTTP.
+    - Más verboso: Puede resultar en más código boilerplate para manejar solicitudes y respuestas.
+- **Feign Client
+    - Enfoque declarativo: Permite definir clientes HTTP mediante interfaces anotadas.
+    - Menor control: Abstrae muchos detalles de las solicitudes HTTP, lo que puede limitar el control en algunos casos.
+    - Código más limpio: Reduce la cantidad de código necesario para realizar solicitudes HTTP.
+
+## Load Balancing
+- Es una técnica utilizada para distribuir la carga de trabajo entre múltiples servidores o instancias de una aplicación con el objetivo de mejorar el rendimiento, la disponibilidad y la escalabilidad del sistema.
+    ### Tipos de Load Balancing
+    - Load Balancing a nivel de red: Distribuye el tráfico a nivel de red utilizando dispositivos como balanceadores de carga hardware o software (por ejemplo, Nginx, HAProxy).
+    - Load Balancing a nivel de aplicación: Se realiza dentro de la aplicación utilizando bibliotecas o frameworks que gestionan la distribución del tráfico entre las instancias (por ejemplo, Spring Cloud LoadBalancer, Netflix Ribbon).
 
 ## Términos comunes
 - asíncrono: que no ocurre al mismo proceso o tiempo.
@@ -173,3 +200,4 @@ spec:
 - servicio de descrubrimiento: componente en una arquitectura de microservicios que permite a los servicios registrarse y localizarse entre sí dinámicamente, facilitando la comunicación y el equilibrio de carga.
 - cloud bootstrap: proceso inicial en Spring Cloud que carga la configuración y prepara el entorno antes de que la aplicación principal se inicie.
 - heartbeat: señal periódica enviada por un sistema o componente para indicar que está activo y funcionando correctamente.
+- @Bean: anotación en Spring que se utiliza para definir un método que produce un bean gestionado por el contenedor de Spring, bean se refiere a un objeto que es instanciado, ensamblado y gestionado por el contenedor de Spring.
