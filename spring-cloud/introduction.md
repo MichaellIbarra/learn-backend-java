@@ -161,8 +161,28 @@ spec:
     - Load Balancing a nivel de red: Distribuye el tráfico a nivel de red utilizando dispositivos como balanceadores de carga hardware o software (por ejemplo, Nginx, HAProxy).
     - Load Balancing a nivel de aplicación: Se realiza dentro de la aplicación utilizando bibliotecas o frameworks que gestionan la distribución del tráfico entre las instancias (por ejemplo, Spring Cloud LoadBalancer, Netflix Ribbon).
 
+## Api Gateway
+- Un Api Gateway (puerta de enlace de API) es el gestor de tráfico que interactúa con los datos o el servicio backend real y aplica políticas, autenticación, autorización y control de acceso general para las llamar de una API para proteger datos valiosos.
+- Un Api Gateway es la forma que usted controla el acceso a sus sistemas y microservicios de back-end, y fue diseñado apra otpimizar la comunicación entre los clientes externos y los servicios internos.
+    ### Patron de diseño API Gateway
+    - Punto de entrada único: Actúa como un único punto de entrada para todas las solicitudes de los clientes.
+    ### Funcionalidades principales de un Api Gateway
+    - Enrutamiento de solicitudes: Dirige las solicitudes entrantes a los microservicios
+    - Autenticación y autorización: Gestiona la seguridad de las solicitudes.
+    - Transformación de datos: Modifica las solicitudes y respuestas según sea necesario.
+    - Monitoreo y registro: Rastrea el uso de la API y registra las solicitudes para análisis posteriores.
+    ### Ventajas de usar un Api Gateway
+    - Simplificación del cliente: Los clientes solo necesitan interactuar con un único punto de entrada.
+    - Seguridad centralizada: Permite aplicar políticas de seguridad de manera uniforme.
+    - Escalabilidad: Facilita la escalabilidad de los microservicios al gestionar el tráfico de manera eficiente.
+
+
+
+
 ## Términos comunes
 - asíncrono: que no ocurre al mismo proceso o tiempo.
+- latencia: retraso en la comunicación o procesamiento de datos.
+- tolerancia a fallos: capacidad de un sistema para continuar operando correctamente en presencia de fallos o errores.
 - síncrono: que ocurre al mismo proceso o tiempo.
 - escalabilidad: capacidad de un sistema para adaptarse a un aumento de carga.
 - allanan: facilitar o hacer más sencillo un proceso.
@@ -201,3 +221,4 @@ spec:
 - cloud bootstrap: proceso inicial en Spring Cloud que carga la configuración y prepara el entorno antes de que la aplicación principal se inicie.
 - heartbeat: señal periódica enviada por un sistema o componente para indicar que está activo y funcionando correctamente.
 - @Bean: anotación en Spring que se utiliza para definir un método que produce un bean gestionado por el contenedor de Spring, bean se refiere a un objeto que es instanciado, ensamblado y gestionado por el contenedor de Spring.
+- patron de diseño: solución reutilizable y probada para resolver problemas comunes en el diseño de software.
