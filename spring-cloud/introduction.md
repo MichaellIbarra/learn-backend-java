@@ -164,7 +164,7 @@ spec:
 ## Api Gateway
 - Un Api Gateway (puerta de enlace de API) es el gestor de tráfico que interactúa con los datos o el servicio backend real y aplica políticas, autenticación, autorización y control de acceso general para las llamar de una API para proteger datos valiosos.
 - Un Api Gateway es la forma que usted controla el acceso a sus sistemas y microservicios de back-end, y fue diseñado apra otpimizar la comunicación entre los clientes externos y los servicios internos.
-    ### Patron de diseño API Gateway
+    ### Patrón de diseño API Gateway
     - Punto de entrada único: Actúa como un único punto de entrada para todas las solicitudes de los clientes.
     ### Funcionalidades principales de un Api Gateway
     - Enrutamiento de solicitudes: Dirige las solicitudes entrantes a los microservicios
@@ -186,7 +186,31 @@ spec:
     - Config Server: El servidor que aloja y distribuye las configuraciones.
     - Config Client: Las aplicaciones que consumen las configuraciones desde el Config Server.
     - Repositorio de configuración: El lugar donde se almacenan las configuraciones (por ejemplo, un repositorio Git).
-
+## Patrón de diseño Circuit Breaker
+- Es un patrón muy parecido a un fusible, el cual se funde para evitar que una descarga eléctrica dañe un circuito. En el contexto de los microservicios, el patrón Circuit Breaker actúa como un interruptor que "rompe" la comunicación entre servicios cuando se detectan fallos repetidos o tiempos de respuesta lentos, evitando así que un fallo en un servicio afecte a toda la aplicación, este interruptor puede "cerrarse" nuevamente cuando el servicio afectado se recupera y vuelve a estar disponible.
+    ### Origenes del patrón Circuit Breaker
+    - Uno de los problemas más común en arquitectura distribuidas es que, algunos de los componentes comiencen a fallar, lo que esto puede implicar desde que dejemos realizar ventas, hasta detener la operación por completo, por lo que tener un plan B en caso de que algo falle siempre es recomendable, sobre todo en procesos críticos.
+    ### Funcionalidades principales del patrón Circuit Breaker
+    - Monitoreo de fallos: Supervisa las llamadas a servicios y detecta fallos repetidos o tiempos de respuesta lentos.
+    - Estado del circuito: Mantiene el estado del circuito (cerrado, abierto o medio abierto) para controlar la comunicación entre servicios.
+    - Mecanismos de recuperación: Permite reintentar llamadas a servicios después de un período de tiempo o cuando se detecta que el servicio está disponible nuevamente.
+    - fallback: Proporciona respuestas alternativas o predeterminadas cuando un servicio no está disponible.
+    - 2 es el máximo de fallos: Número de fallos consecutivos permitidos antes de abrir el circuito.
+    - Tiempo de espera: Período de tiempo que el circuito permanece abierto antes de intentar
+    - Modo medio abierto: Permite probar el servicio nuevamente después de un tiempo de espera.
+    ### Ciclo de vida de Circuit Breaker
+    - Closed (Cerrado): El circuito está cerrado y las llamadas al servicio se realizan normalmente. En caso de fallos, se incrementa el contador de fallos.
+    - Open (Abierto): Cuando el número de fallos consecutivos supera el umbral configurado, el circuito se abre y las llamadas al servicio se bloquean temporalmente, devolviendo respuestas de fallback.
+    - Half-Open (Medio Abierto): Tras un tiempo en estado abierto, el circuito entra en estado medio abierto, permitiendo algunas llamadas al servicio para probar si se ha recuperado. Si las llamadas tienen éxito, el circuito se cierra nuevamente; si fallan, vuelve a abrirse.
+    ### Resilience4j
+    - Es una biblioteca ligera y modular inspirada en Netflix Hystrix, diseñada para implementar patrones de tolerancia a fallos en aplicaciones Java. Resilience4j proporciona una serie de herramientas y mecanismos para mejorar la resiliencia de las aplicaciones, permitiendo manejar fallos de manera eficiente y mantener la disponibilidad del sistema.
+    ### Principales prácticas asociadas a Resilience4j
+    - Circuit Breaker: Implementa el patrón Circuit Breaker para gestionar fallos en llamadas a servicios.
+    - Retry: Permite reintentar llamadas fallidas a servicios con configuraciones personalizables.
+    - Rate Limiter: Controla la tasa de solicitudes a un servicio para evitar sobrecargas.
+    - Bulkhead: Aísla partes de la aplicación para limitar el impacto de fallos en otras áreas.
+    - Time Limiter: Establece límites de tiempo para las llamadas a servicios, evitando esperas prolongadas.
+    - Cache: Proporciona mecanismos de caché para almacenar respuestas y mejorar el rendimiento.
 
 
 ## Términos comunes
@@ -231,4 +255,9 @@ spec:
 - cloud bootstrap: proceso inicial en Spring Cloud que carga la configuración y prepara el entorno antes de que la aplicación principal se inicie.
 - heartbeat: señal periódica enviada por un sistema o componente para indicar que está activo y funcionando correctamente.
 - @Bean: anotación en Spring que se utiliza para definir un método que produce un bean gestionado por el contenedor de Spring, bean se refiere a un objeto que es instanciado, ensamblado y gestionado por el contenedor de Spring.
-- patron de diseño: solución reutilizable y probada para resolver problemas comunes en el diseño de software.
+- patrón de diseño: solución reutilizable y probada para resolver problemas comunes en el diseño de software.
+- supplier (proveedor): interfaz funcional en Java que representa una función que no toma argumentos y devuelve un resultado.
+- consumer: interfaz funcional en Java que representa una función que toma un argumento y no devuelve ningún resultado.
+- function: interfaz funcional en Java que representa una función que toma un argumento y devuelve un resultado.
+- dto: Data Transfer Object, es un patrón de diseño utilizado para transferir datos entre diferentes capas o componentes de una aplicación, generalmente para reducir la cantidad de llamadas y mejorar el rendimiento.
+- resiliencia: capacidad de un sistema para recuperarse rápidamente de fallos o adaptarse a cambios inesperados.
