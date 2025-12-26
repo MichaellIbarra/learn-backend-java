@@ -597,3 +597,77 @@ Hotel hotel = hotelMap.get(grade.getHotelId());
 ```
 
 Alternativas breves: usar `Collectors.groupingBy` si quieres listas por id, o construir el `Map` manualmente con un bucle `for` si prefieres control total sobre duplicados y memoria.
+
+Para microservicios con Spring Cloud Config, es recomendable separar las configuraciones de la siguiente manera:
+
+## En `application.yml` local (del servicio):
+Mantener solo configuración básica y de conexión al Config Server:
+
+```yaml
+spring:
+  application:
+    name: service-hotel
+  config:
+    import: optional:configserver:http://localhost:8085
+  profiles:
+    active: dev
+```
+
+## En el repositorio del Config Server (`service-hotel.yml`):
+Colocar toda la configuración específica del entorno:
+
+```yaml
+# service-hotel.yml (en el repo Git del Config Server)
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/hotels_db
+    username: postgres
+    password: ${DB_PASSWORD:matichelo17}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+server:
+  port: 8082
+
+eureka:
+  instance:
+    prefer-ip-address: true
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+
+# Configuraciones específicas del negocio
+service:
+  grade:
+    name: service-grade
+  hotel:
+    name: service-hotel
+```
+
+## Para diferentes entornos (`service-hotel-prod.yml`):
+
+```yaml
+spring:
+  datasource:
+    url: jdbc:postgresql://prod-db:5432/hotels_db
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+
+server:
+  port: 80
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://eureka-prod:8761/eureka
+```
+
+**Ventajas**: Configuración centralizada, fácil cambio entre entornos, y secrets manejados externamente.

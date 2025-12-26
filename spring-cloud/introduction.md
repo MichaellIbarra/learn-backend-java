@@ -175,7 +175,17 @@ spec:
     - Simplificación del cliente: Los clientes solo necesitan interactuar con un único punto de entrada.
     - Seguridad centralizada: Permite aplicar políticas de seguridad de manera uniforme.
     - Escalabilidad: Facilita la escalabilidad de los microservicios al gestionar el tráfico de manera eficiente.
-
+## Config Server
+- Es un componente de Spring Cloud que proporciona una solución centralizada para gestionar la configuración de aplicaciones distribuidas y microservicios. Permite almacenar y distribuir configuraciones de manera eficiente, facilitando la gestión de cambios y la coherencia en entornos dinámicos.
+    ### Características principales de Config Server
+    - Almacenamiento centralizado: Permite almacenar configuraciones en un repositorio centralizado, como Git, SVN o sistemas de archivos.
+    - Soporte para múltiples entornos: Facilita la gestión de configuraciones específicas para diferentes entornos (desarrollo, pruebas, producción).
+    - Actualización dinámica: Permite actualizar las configuraciones en tiempo real sin necesidad de reiniciar las aplicaciones.
+    - Integración con Spring Boot: Se integra fácilmente con aplicaciones Spring Boot, permitiendo la carga automática de configuraciones desde el Config Server.
+    ### Componentes de Config Server
+    - Config Server: El servidor que aloja y distribuye las configuraciones.
+    - Config Client: Las aplicaciones que consumen las configuraciones desde el Config Server.
+    - Repositorio de configuración: El lugar donde se almacenan las configuraciones (por ejemplo, un repositorio Git).
 
 
 
