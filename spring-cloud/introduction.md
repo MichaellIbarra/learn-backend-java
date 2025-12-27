@@ -206,10 +206,10 @@ spec:
     - Es una biblioteca ligera y modular inspirada en Netflix Hystrix, diseñada para implementar patrones de tolerancia a fallos en aplicaciones Java. Resilience4j proporciona una serie de herramientas y mecanismos para mejorar la resiliencia de las aplicaciones, permitiendo manejar fallos de manera eficiente y mantener la disponibilidad del sistema.
     ### Principales prácticas asociadas a Resilience4j
     - Circuit Breaker: Implementa el patrón Circuit Breaker para gestionar fallos en llamadas a servicios.
-    - Retry: Permite reintentar llamadas fallidas a servicios con configuraciones personalizables.
     - Rate Limiter: Controla la tasa de solicitudes a un servicio para evitar sobrecargas.
-    - Bulkhead: Aísla partes de la aplicación para limitar el impacto de fallos en otras áreas.
+    - Retry: Permite reintentar llamadas fallidas a servicios con configuraciones personalizables.
     - Time Limiter: Establece límites de tiempo para las llamadas a servicios, evitando esperas prolongadas.
+    - Bulkhead: Aísla partes de la aplicación para limitar el impacto de fallos en otras áreas.
     - Cache: Proporciona mecanismos de caché para almacenar respuestas y mejorar el rendimiento.
 
 
@@ -261,3 +261,8 @@ spec:
 - function: interfaz funcional en Java que representa una función que toma un argumento y devuelve un resultado.
 - dto: Data Transfer Object, es un patrón de diseño utilizado para transferir datos entre diferentes capas o componentes de una aplicación, generalmente para reducir la cantidad de llamadas y mejorar el rendimiento.
 - resiliencia: capacidad de un sistema para recuperarse rápidamente de fallos o adaptarse a cambios inesperados.
+- spring actuator: módulo de Spring Boot que proporciona funcionalidades de monitoreo y gestión para aplicaciones, permitiendo exponer métricas, información de salud y otros datos relevantes a través de endpoints HTTP.
+- resilience4j: biblioteca ligera y modular para implementar patrones de tolerancia a fallos en aplicaciones Java, inspirada en Netflix Hystrix.
+- fallback: mecanismo que proporciona una respuesta alternativa o predeterminada cuando una operación falla o no está disponible.
+- Spring Boot Starter AOP: es una dependencia de Spring Boot que facilita la configuración y el uso de la programación orientada a aspectos (AOP) en aplicaciones Spring Boot, permitiendo la modularización de preocupaciones transversales como el manejo de transacciones, la seguridad y el registro.
+- standalone: que funciona de manera independiente sin necesidad de depender de otros sistemas o componentes.

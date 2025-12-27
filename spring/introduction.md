@@ -671,3 +671,53 @@ eureka:
 ```
 
 **Ventajas**: Configuración centralizada, fácil cambio entre entornos, y secrets manejados externamente.
+Te explico **paso a paso** cómo funciona cada atributo del circuit breaker cuando se ejecuta:
+
+## **1. register-health-indicator: true**
+- **Cuándo actúa**: En el arranque de la aplicación
+- **Qué hace**: Registra el circuit breaker en Spring Boot Actuator para que puedas consultar su estado en `/actuator/health`
+
+## **2. event-consumer-buffer-size: 10**
+- **Cuándo actúa**: En **cada llamada** al servicio
+- **Por qué se necesita**: Para **almacenar eventos** (éxitos, fallos, timeouts) sin afectar performance
+- **Ejemplo**: Si haces 100 llamadas rápidas, solo guarda los últimos 10 eventos en memoria
+
+## **3. failure-rate-threshold: 50**
+- **Cuándo actúa**: Después de `minimum-number-of-calls`
+- **Qué evalúa**: Si ≥ 50% de llamadas fallan → **ABRE** el circuito
+- **Ejemplo**: De 10 llamadas, si 5 o más fallan = circuito OPEN
+
+## **4. minimum-number-of-calls: 5**
+- **Cuándo actúa**: Es el **prerequisito** para evaluar
+- **Por qué**: Evita que 1 fallo de 1 llamada (100%) abra el circuito
+- **Ejemplo**: Necesitas mínimo 5 llamadas antes de calcular el porcentaje de fallos
+
+## **5. automatic-transition-from-open-to-half-open-enabled: true**
+- **Cuándo actúa**: Después de `wait-duration-in-open-state`
+- **Qué hace**: Automáticamente pasa de OPEN → HALF-OPEN para **probar** si el servicio se recuperó
+
+## **6. wait-duration-in-open-state: 6000**
+- **Cuándo actúa**: Cuando el circuito está **OPEN**
+- **Qué hace**: Espera 6 segundos antes de intentar reconectar
+- **Durante este tiempo**: Todas las llamadas fallan inmediatamente con `CallNotPermittedException`
+
+## **7. permitted-number-of-calls-in-half-open-state: 3**
+- **Cuándo actúa**: En estado **HALF-OPEN**
+- **Qué hace**: Permite solo 3 llamadas de prueba
+- **Si las 3 tienen éxito**: Circuito → CLOSED (normal)
+- **Si alguna falla**: Circuito → OPEN (esperar otros 6 segundos)
+
+## **8. sliding-window-size: 10**
+- **Cuándo actúa**: Continuamente en estado **CLOSED**
+- **Qué hace**: Solo considera las **últimas 10 llamadas** para calcular la tasa de fallos
+- **Ejemplo**: Si tienes 100 llamadas exitosas y luego 5 fallos de 5 llamadas = 100% fallos (solo mira las últimas 10)
+
+## **9. sliding-window-type: COUNT_BASED**
+- **Qué significa**: La ventana se basa en **número de llamadas** (no tiempo)
+- **Alternativa**: `TIME_BASED` (basada en segundos)
+
+## **Flujo Completo de Ejecución:**
+1. Servicio normal → **CLOSED**
+2. Fallan 5 de 10 llamadas → **OPEN** (bloquea todo)
+3. Espera 6 segundos → **HALF-OPEN** 
+4. Prueba 3 llamadas → Si OK: **CLOSED**, Si falla: **OPEN**
