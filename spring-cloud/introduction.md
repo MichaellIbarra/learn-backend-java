@@ -211,7 +211,15 @@ spec:
     - Time Limiter: Establece límites de tiempo para las llamadas a servicios, evitando esperas prolongadas.
     - Bulkhead: Aísla partes de la aplicación para limitar el impacto de fallos en otras áreas.
     - Cache: Proporciona mecanismos de caché para almacenar respuestas y mejorar el rendimiento.
-
+    ### Diferencias y cuándo usar cada uno:
+    - @Retry
+    - Propósito: Reintenta llamadas fallidas inmediatamente
+    - Mejor para: Errores transitorios, timeouts ocasionales
+    - Problema: Puede sobrecargar un servicio que ya está caído
+    - @CircuitBreaker
+    - Propósito: Previene llamadas a servicios que fallan consistentemente
+    - Mejor para: Fallos sistemáticos, servicios completamente caídos
+    - Problema: Puede ser muy agresivo para errores temporales
 
 ## Términos comunes
 - asíncrono: que no ocurre al mismo proceso o tiempo.

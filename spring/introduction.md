@@ -721,3 +721,113 @@ Te explico **paso a paso** cómo funciona cada atributo del circuit breaker cuan
 2. Fallan 5 de 10 llamadas → **OPEN** (bloquea todo)
 3. Espera 6 segundos → **HALF-OPEN** 
 4. Prueba 3 llamadas → Si OK: **CLOSED**, Si falla: **OPEN**
+Excelente pregunta. Te explico las **diferencias clave** y por qué **ambos son necesarios**:
+
+## **Exception Handling vs Circuit Breaker**
+
+### **Exception Handling (GlobalExceptionController)**
+- **Propósito**: Maneja errores **después** de que ocurren
+- **Cuándo actúa**: Cuando ya se ejecutó la llamada y falló
+- **Alcance**: Error individual por request
+
+### **Circuit Breaker**
+- **Propósito**: **Previene** errores futuros basado en patrones
+- **Cuándo actúa**: **Antes** de hacer la llamada si detecta problemas
+- **Alcance**: Protección sistemática del servicio
+
+## **Ejemplo Práctico - Por qué necesitas ambos:**
+
+### **Sin Circuit Breaker (solo exceptions):**
+```java
+// Cada request sigue intentando conectar al servicio caído
+Request 1: intenta → falla → exception → 5 segundos perdidos
+Request 2: intenta → falla → exception → 5 segundos perdidos  
+Request 3: intenta → falla → exception → 5 segundos perdidos
+// Tu API se vuelve LENTA porque cada request espera timeout
+```
+
+### **Con Circuit Breaker:**
+```java
+Request 1-5: intentan → fallan → circuit se ABRE
+Request 6-100: fallback INMEDIATO (sin intentar conectar)
+// Tu API sigue siendo RÁPIDA
+```
+
+## **Ventajas del Circuit Breaker:**
+
+### **1. Performance**
+- **Sin CB**: Cada request espera timeout (5-30 segundos)
+- **Con CB**: Respuesta inmediata del fallback (milisegundos)
+
+### **2. Protección en Cascada**
+- Evita que un servicio caído **tumbe** toda tu aplicación
+- Protege recursos (conexiones, threads, memoria)
+
+### **3. Auto-recuperación**
+- Detecta automáticamente cuando el servicio se recupera
+- No necesitas intervención manual
+
+### **4. Monitoreo**
+- Métricas en tiempo real del estado de servicios
+- Alertas proactivas
+
+## **Cuándo usar cada uno:**
+
+### **Exception Handling para:**
+- Errores de validación
+- Errores de base de datos
+- Errores de lógica de negocio
+- Errores inesperados
+
+### **Circuit Breaker para:**
+- Llamadas a servicios externos
+- APIs de terceros
+- Microservicios
+- Cualquier dependencia que pueda fallar
+
+## **En tu código actual:**
+```java
+// Exception handling: maneja errores individuales
+@ExceptionHandler(ResourceNotFoundException.class)
+
+// Circuit Breaker: protege contra fallos sistemáticos del servicio hotel/grade
+@CircuitBreaker(name = "ratingHotelBreaker", fallbackMethod = "ratingHotelFallback")
+```
+
+**Ambos se complementan** para crear una aplicación **resiliente** y **rápida**.
+La configuración de `management` define los endpoints de monitoreo de Spring Boot Actuator. Cada atributo tiene las siguientes funciones:
+
+## `management.health.circuitbreakers.enabled: true`
+- **Qué activa**: Habilita el indicador de salud específico para circuit breakers
+- **Cuándo se ejecuta**: Al realizar una petición GET a `/actuator/health`
+- **Por qué se ejecuta**: Para monitorear el estado de los circuit breakers configurados
+- **Efecto**: Incluye información del estado de los circuit breakers en la respuesta de salud
+
+## `management.endpoints.web.exposure.include: health`
+- **Qué activa**: Expone el endpoint de salud a través de HTTP
+- **Cuándo se ejecuta**: Al iniciar la aplicación, Spring registra la ruta `/actuator/health`
+- **Por qué se ejecuta**: Para permitir acceso externo al endpoint de monitoreo
+- **Efecto**: Hace disponible la URL `http://localhost:puerto/actuator/health`
+
+## `management.endpoint.health.show-details: always`
+- **Qué activa**: Muestra detalles completos del estado de salud
+- **Cuándo se ejecuta**: En cada petición al endpoint `/actuator/health`
+- **Por qué se ejecuta**: Para proporcionar información detallada sobre cada componente
+- **Efecto**: La respuesta incluye detalles de base de datos, circuit breakers, disco, etc., en lugar de solo mostrar "UP" o "DOWN"
+
+Con esta configuración, al acceder a `/actuator/health` obtienes información detallada del estado de todos los componentes, incluyendo el estado específico de tus circuit breakers configurados con Resilience4j.
+
+El @Retry funciona de manera diferente al Circuit Breaker. Te explico cada configuración y cómo afecta el comportamiento:
+Configuración de Retry explicada:
+max-attempts: 3
+Qué hace: Intenta la operación hasta 3 veces en total (1 llamada original + 2 reintentos)
+Cuándo se ejecuta: En cada petición HTTP individual
+Efecto: Si la primera llamada falla, automáticamente reintenta 2 veces más antes de ejecutar el fallback
+wait-duration: 2000ms
+Qué hace: Espera 2 segundos entre cada reintento
+Cuándo: Entre cada uno de los 3 intentos
+Efecto: Si falla el intento 1, espera 2 segundos → intento 2, si falla espera 2 segundos → intento 3
+retry-exceptions
+Qué hace: Solo reintenta cuando ocurren estas excepciones específicas
+Por qué es importante: No todos los errores deben reintentar (ej: errores 400 Bad Request no tienen sentido reintentar)
+Efecto: Solo reintenta en IOException y TimeoutException
