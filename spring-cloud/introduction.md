@@ -220,6 +220,18 @@ spec:
     - Propósito: Previene llamadas a servicios que fallan consistentemente
     - Mejor para: Fallos sistemáticos, servicios completamente caídos
     - Problema: Puede ser muy agresivo para errores temporales
+## JWT (JSON Web Token)
+- Es un estándar abierto (RFC 7519) que define un formato compacto y autónomo para transmitir información segura entre partes como un objeto JSON. Los JWT se utilizan comúnmente para la autenticación y autorización en aplicaciones web y móviles, permitiendo a los usuarios acceder a recursos protegidos de manera segura.
+    ### Estructura de un JWT
+    - Header (Encabezado): Contiene información sobre el tipo de token (JWT) y el algoritmo de firma utilizado (por ejemplo, HMAC SHA256 o RSA).
+    - Payload (Carga útil): Contiene las declaraciones (claims) que representan la información que se desea transmitir, como el identificador del usuario, roles, permisos, etc.
+    - Signature (Firma): Es una firma digital que se utiliza para verificar la integridad del token y asegurar que no ha sido modificado.
+    ### Funcionamiento de JWT
+    - Autenticación: Cuando un usuario inicia sesión, el servidor genera un JWT que contiene la información del usuario y lo envía al cliente.
+    - Almacenamiento: El cliente almacena el JWT (generalmente en localStorage o cookies) y lo incluye en las solicitudes posteriores al servidor.
+    - Verificación: El servidor verifica la firma del JWT en cada solicitud para asegurarse de que es válido y no ha sido alterado.
+    - Acceso a recursos: Si el JWT es válido, el servidor permite al usuario acceder a los recursos protegidos según los permisos definidos en el token.
+
 
 ## Términos comunes
 - asíncrono: que no ocurre al mismo proceso o tiempo.
@@ -274,3 +286,8 @@ spec:
 - fallback: mecanismo que proporciona una respuesta alternativa o predeterminada cuando una operación falla o no está disponible.
 - Spring Boot Starter AOP: es una dependencia de Spring Boot que facilita la configuración y el uso de la programación orientada a aspectos (AOP) en aplicaciones Spring Boot, permitiendo la modularización de preocupaciones transversales como el manejo de transacciones, la seguridad y el registro.
 - standalone: que funciona de manera independiente sin necesidad de depender de otros sistemas o componentes.
+- dto: es un patrón de diseño utilizado para transferir datos entre diferentes capas o componentes de una aplicación, generalmente para reducir la cantidad de llamadas y mejorar el rendimiento, mediante objetos simples que contienen solo los datos necesarios.
+- serializar: proceso de convertir un objeto en una secuencia de bytes para almacenarlo o transmitirlo.
+- deserializar: proceso de convertir una secuencia de bytes de vuelta a un objeto.
+- bytes: unidad básica de almacenamiento de datos en informática, que representa un conjunto de 8 bits.
+- localstorage: mecanismo de almacenamiento web que permite a las aplicaciones web almacenar datos de manera persistente en el navegador del usuario.

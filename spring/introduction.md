@@ -831,3 +831,180 @@ retry-exceptions
 Qué hace: Solo reintenta cuando ocurren estas excepciones específicas
 Por qué es importante: No todos los errores deben reintentar (ej: errores 400 Bad Request no tienen sentido reintentar)
 Efecto: Solo reintenta en IOException y TimeoutException
+
+La diferencia entre `@Configuration` y `@Component` radica en su propósito y uso específico:
+
+## @Configuration
+- **Propósito**: Marca una clase como fuente de definiciones de beans
+- **Uso**: Contiene métodos anotados con `@Bean` 
+- **Procesamiento**: Spring usa CGLIB para crear proxies y asegurar que los métodos `@Bean` se llamen una sola vez (singleton)
+- **Contexto**: Para configuración de la aplicación
+
+```java
+@Configuration
+public class PasswordEncoderConfig {
+    @Bean  // Este método define un bean
+    public PasswordEncoder passwordEncoder(){
+        return new BCryptPasswordEncoder();
+    }
+}
+```
+
+## @Component
+- **Propósito**: Marca una clase como componente Spring para auto-detección
+- **Uso**: La clase completa se convierte en un bean
+- **Procesamiento**: Spring crea una instancia directa de la clase
+- **Contexto**: Para servicios, utilidades, componentes de negocio
+
+```java
+@Component
+public class JwtProvider {
+    @Value("${jwt.secret}")
+    private String secret;
+    
+    // La clase completa es un bean
+}
+```
+
+## Diferencias clave:
+
+| Aspecto | @Configuration | @Component |
+|---------|----------------|------------|
+| **Bean creation** | Métodos `@Bean` | Toda la clase |
+| **Proxy** | Sí (CGLIB) | No |
+| **Singleton enforcement** | Automático para `@Bean` | Manual si es necesario |
+| **Uso típico** | Configuración | Servicios/Utilidades |
+
+## Cuándo usar cada uno:
+
+- **@Configuration**: Cuando necesitas definir múltiples beans o configuración compleja
+- **@Component**: Cuando la clase completa representa un servicio o utilidad
+
+En tu caso, `PasswordEncoderConfig` usa `@Configuration` correctamente porque define un bean, mientras que `JwtProvider` usa `@Component` porque toda la clase es el servicio JWT.
+
+Basándome en tu código, te explico las utilidades específicas de cada anotación:
+
+## @Configuration en `PasswordEncoderConfig`
+
+**Utilidad específica:**
+- Defines **cómo crear beans** que Spring necesita
+- El método `passwordEncoder()` le dice a Spring: "cuando alguien necesite un `PasswordEncoder`, usa este `BCryptPasswordEncoder`"
+- Spring puede **inyectar** este bean en otras clases
+
+```java
+// Otra clase puede usar el bean que definiste
+@Service
+public class UserService {
+    @Autowired
+    private PasswordEncoder passwordEncoder; // Spring inyecta el BCryptPasswordEncoder
+    
+    public void saveUser(String password) {
+        String encoded = passwordEncoder.encode(password); // Usa tu configuración
+    }
+}
+```
+
+## @Component en `JwtProvider`
+
+**Utilidad específica:**
+- Convierte **toda la clase** en un bean de Spring
+- Otras clases pueden usar `JwtProvider` directamente
+- Spring maneja la **inyección de propiedades** (`@Value`)
+
+```java
+// Otras clases pueden usar JwtProvider
+@RestController
+public class AuthController {
+    @Autowired
+    private JwtProvider jwtProvider; // Spring inyecta tu JwtProvider
+    
+    public String login() {
+        // Usa los métodos de jwtProvider
+        return jwtProvider.generateToken();
+    }
+}
+```
+
+## Sin estas anotaciones:
+
+**Problema sin @Configuration:**
+```java
+// Tendrías que crear manualmente en cada lugar:
+PasswordEncoder encoder = new BCryptPasswordEncoder(); // Repetitivo y sin control
+```
+
+**Problema sin @Component:**
+```java
+// Tendrías que crear manualmente:
+JwtProvider jwt = new JwtProvider(); // Sin inyección de propiedades automática
+```
+
+## Resumen de utilidades:
+
+- **@Configuration**: Spring **fabrica beans** para ti y los inyecta donde los necesites
+- **@Component**: Spring **maneja la clase** por ti (creación, inyección de propiedades, ciclo de vida)
+
+Ambas permiten que Spring **gestione automáticamente** tus objetos en lugar de que los crees manualmente.
+Necesitas **AMBOS** conjuntos de dependencias. Te explico por qué:
+
+## Estructura de JJWT (modular desde 0.10.0):
+
+JJWT se divide en 3 módulos principales:
+
+### 1. **jjwt-api** (obligatorio)
+- Contiene las **interfaces y clases públicas**
+- Es lo que usas en tu código (`Jwts`, `Claims`, etc.)
+- **Scope**: `compile` (por defecto)
+
+### 2. **jjwt-impl** (obligatorio en runtime)
+- Contiene la **implementación** de las interfaces
+- Necesario para que funcione en ejecución
+- **Scope**: `runtime`
+
+### 3. **jjwt-jackson** (recomendado)
+- Serialización/deserialización JSON usando **Jackson**
+- Alternativas: `jjwt-gson` o `jjwt-orgjson`
+- **Scope**: `runtime`
+
+## Configuración correcta para tu `pom.xml`:
+
+```xml
+<!-- API (compile time) -->
+<dependency>
+    <groupId>io.jsonwebtoken</groupId>
+    <artifactId>jjwt-api</artifactId>
+    <version>0.13.0</version>
+</dependency>
+
+<!-- Implementación (runtime) -->
+<dependency>
+    <groupId>io.jsonwebtoken</groupId>
+    <artifactId>jjwt-impl</artifactId>
+    <version>0.13.0</version>
+    <scope>runtime</scope>
+</dependency>
+
+<!-- Serialización JSON (runtime) -->
+<dependency>
+    <groupId>io.jsonwebtoken</groupId>
+    <artifactId>jjwt-jackson</artifactId>
+    <version>0.13.0</version>
+    <scope>runtime</scope>
+</dependency>
+```
+
+## ¿Qué pasa si solo usas jjwt-api?
+
+❌ **Error en runtime**: `ClassNotFoundException` porque falta la implementación real.
+
+## ¿Qué pasa si solo usas jjwt-impl y jjwt-jackson?
+
+❌ **Error en compile time**: No puede compilar porque faltan las interfaces públicas que usas en tu código.
+
+## Resumen:
+
+- **jjwt-api**: Para **compilar** tu código
+- **jjwt-impl**: Para **ejecutar** tu código  
+- **jjwt-jackson**: Para **serializar** claims a JSON
+
+**Respuesta directa**: Usa las **3 dependencias** como mostré arriba. Es la configuración estándar y recomendada por la documentación oficial de JJWT.
