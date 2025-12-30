@@ -1264,3 +1264,65 @@ Spring Boot:
 - Dependencia `spring-boot-configuration-processor` (opcional pero recomendada)
 
 Es **"magia" de Spring Boot** que usa reflexión para mapear propiedades automáticamente. 🪄
+## ¿Es perjudicial usar `(/.*)?" en el patrón?
+
+**No es perjudicial**, pero debes entender qué estás permitiendo:
+
+### ✅ Ventajas
+
+- **Flexibilidad**: Coincide con rutas con o sin parámetros
+- **Mantenimiento**: Un solo patrón para múltiples casos
+- **Práctico**: Cubre casos comunes sin duplicar configuración
+
+### ⚠️ Consideraciones importantes
+
+```yaml
+- uri: "/api/v1/users(/.*)?"
+  methods:
+    - POST
+  roles:
+    - ADMIN
+```
+
+Este patrón coincide con:
+- ✅ `/api/v1/users` (crear usuario)
+- ✅ `/api/v1/users/123` (actualizar usuario específico)
+- ✅ `/api/v1/users/123/profile` (ruta anidada)
+- ✅ `/api/v1/users/cualquier-cosa` (todas las sub-rutas)
+
+### 🎯 Recomendación
+
+**Si quieres control granular**, separa los patrones:
+
+```yaml
+protected-paths:
+  paths:
+    # Crear usuario (POST /api/v1/users)
+    - uri: "/api/v1/users"
+      methods:
+        - POST
+      roles:
+        - ADMIN
+    
+    # Operaciones sobre usuarios específicos (PUT/DELETE /api/v1/users/123)
+    - uri: "/api/v1/users/[0-9]+"
+      methods:
+        - PUT
+        - DELETE
+        - PATCH
+      roles:
+        - ADMIN
+    
+    # Obtener usuarios
+    - uri: "/api/v1/users(/.*)?"
+      methods:
+        - GET
+      roles:
+        - ADMIN
+        - USER
+```
+
+### 📋 Conclusión
+
+El patrón `(/.*)?"` **NO es perjudicial** si todas las sub-rutas deben tener la misma restricción de seguridad. Si necesitas permisos diferentes para rutas específicas, usa patrones más específicos. 🔐
+EXPRESIONES REGULARES
