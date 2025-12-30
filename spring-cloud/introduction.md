@@ -154,6 +154,14 @@ spec:
     - Enfoque declarativo: Permite definir clientes HTTP mediante interfaces anotadas.
     - Menor control: Abstrae muchos detalles de las solicitudes HTTP, lo que puede limitar el control en algunos casos.
     - Código más limpio: Reduce la cantidad de código necesario para realizar solicitudes HTTP.
+## WebClient
+- Es una clase proporcionada por Spring WebFlux que permite realizar solicitudes HTTP de manera reactiva y asíncrona. WebClient es parte del stack reactivo de Spring y está diseñado para trabajar con flujos de datos no bloqueantes, lo que lo hace ideal para aplicaciones que requieren alta concurrencia y eficiencia en el manejo de recursos.
+    ### Características principales de WebClient
+    - Asíncrono y no bloqueante: Permite realizar solicitudes HTTP sin bloquear el hilo, lo que mejora la eficiencia y escalabilidad de las aplicaciones.
+    - Soporte para programación reactiva: Se integra con el modelo de programación reactiva de Spring WebFlux, utilizando Mono y Flux para manejar flujos de datos.
+    - Flexibilidad en la configuración: Permite personalizar las solicitudes HTTP, incluyendo encabezados, parámetros, cuerpos, etc.
+    - Soporte para diferentes formatos de datos: Permite trabajar con JSON, XML y otros formatos de datos.
+
 
 ## Load Balancing
 - Es una técnica utilizada para distribuir la carga de trabajo entre múltiples servidores o instancias de una aplicación con el objetivo de mejorar el rendimiento, la disponibilidad y la escalabilidad del sistema.

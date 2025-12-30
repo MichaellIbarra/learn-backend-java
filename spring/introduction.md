@@ -1008,3 +1008,259 @@ JJWT se divide en 3 módulos principales:
 - **jjwt-jackson**: Para **serializar** claims a JSON
 
 **Respuesta directa**: Usa las **3 dependencias** como mostré arriba. Es la configuración estándar y recomendada por la documentación oficial de JJWT.
+# Explicación detallada de `AuthFilter`
+
+## `extends AbstractGatewayFilterFactory<AuthFilter.Config>`
+
+- **`extends`**: Hereda de `AbstractGatewayFilterFactory` para crear filtros personalizados en Spring Cloud Gateway
+- **`<AuthFilter.Config>`**: Es un **tipo genérico** (generics en Java). Indica que este filtro usa la clase `Config` para su configuración
+- Los `<>` definen **parámetros de tipo**, permitiendo crear clases reutilizables con diferentes tipos
+
+---
+
+## Clase estática `Config`
+
+```java
+public static class Config {
+}
+```
+
+- **`static`**: Puede existir sin una instancia de `AuthFilter`
+- Se usa para definir propiedades de configuración del filtro (aunque aquí está vacía)
+- Spring Cloud Gateway la utiliza para mapear configuraciones desde `application.yml`
+
+---
+
+## Constructor con `super(Config.class)`
+
+```java
+public AuthFilter(WebClient.Builder builder) {
+    super(Config.class);
+    this.webClient = builder;
+}
+```
+
+- **`super(Config.class)`**: Llama al constructor de la clase padre (`AbstractGatewayFilterFactory`)
+- Le indica qué clase usar para la configuración
+- Es **obligatorio** para que Spring sepa qué tipo de configuración esperar
+
+---
+
+## Método `apply()`
+
+```java
+public GatewayFilter apply(AuthFilter.Config config)
+```
+
+- Es el método **principal** del filtro
+- Spring lo llama automáticamente cuando una petición pasa por el gateway
+- Retorna un `GatewayFilter` que contiene la lógica de filtrado
+
+---
+
+## `.map()` y `.flatMap()`
+
+```java
+.map(t -> {
+    t.getToken();
+    return exchange;
+}).flatMap(chain::filter);
+```
+
+### **`map()`**
+- Transforma el resultado de `TokenDto` 
+- Aquí llama a `t.getToken()` (aunque no usa el resultado)
+- Retorna el `exchange` original para continuar con la petición
+
+### **`flatMap(chain::filter)`**
+- **`flatMap`**: "Aplana" Monos anidados (evita `Mono<Mono<Void>>`)
+- **`chain::filter`**: Continúa con el siguiente filtro en la cadena
+- Es como decir: "validación exitosa, deja pasar la petición"
+
+---
+
+## ¿Por qué termina en `flatMap`?
+
+Porque estamos trabajando con **programación reactiva** (WebFlux):
+
+1. `webClient.post()` → Retorna `Mono<TokenDto>`
+2. `.map()` → Retorna `Mono<ServerWebExchange>`
+3. `chain.filter()` → Retorna `Mono<Void>`
+4. **Sin `flatMap`** → Tendríamos `Mono<Mono<Void>>` ❌
+5. **Con `flatMap`** → Obtenemos `Mono<Void>` ✅
+
+---
+
+## Flujo completo
+
+1. Verifica si existe header `Authorization`
+2. Valida formato `Bearer token`
+3. Llama al servicio de autenticación para validar el token
+4. Si es válido → continúa con la petición
+5. Si falla → retorna error 400
+# Explicación de `exchange` y `chain`
+
+## `ServerWebExchange exchange`
+
+Es el **contexto completo de la petición HTTP** en Spring WebFlux. Contiene:
+
+### **Request (Petición)**
+```java
+exchange.getRequest()  // Accede a la petición HTTP
+    .getHeaders()      // Headers HTTP (Authorization, Content-Type, etc.)
+    .getPath()         // Ruta (/api/users)
+    .getMethod()       // Método HTTP (GET, POST, etc.)
+    .getBody()         // Cuerpo de la petición
+```
+
+### **Response (Respuesta)**
+```java
+exchange.getResponse()      // Accede a la respuesta HTTP
+    .setStatusCode()        // Define código de estado (200, 400, 500)
+    .getHeaders()           // Modifica headers de respuesta
+    .writeWith()            // Escribe el cuerpo de la respuesta
+```
+
+### **Atributos**
+```java
+exchange.getAttributes()    // Almacena datos entre filtros
+```
+
+**Es como el `HttpServletRequest` y `HttpServletResponse` combinados en programación reactiva.**
+
+---
+
+## `GatewayFilterChain chain`
+
+Es la **cadena de filtros** del Gateway. Representa todos los filtros que se ejecutan en orden.
+
+### **¿Qué hace `chain.filter(exchange)`?**
+
+```java
+chain.filter(exchange)  // Pasa al SIGUIENTE filtro
+```
+
+1. Ejecuta el **siguiente filtro** en la cadena
+2. Si no hay más filtros, **envía la petición al servicio destino**
+3. Retorna un `Mono<Void>` (promesa de que terminará)
+
+---
+
+## Ejemplo práctico
+
+```java
+return ((exchange, chain) -> {
+    // 1️⃣ Modificas la petición (lees headers, validas token)
+    String token = exchange.getRequest().getHeaders().get("Authorization");
+    
+    // 2️⃣ Si hay error, terminas aquí
+    if (token == null) {
+        return onError(exchange, HttpStatus.BAD_REQUEST);
+    }
+    
+    // 3️⃣ Si todo está bien, PASAS al siguiente filtro
+    return chain.filter(exchange);  // ← Continúa el flujo
+});
+```
+
+---
+
+## Flujo completo en tu código
+
+```java
+// Validar token con servicio externo
+return webClient.build()
+    .post()
+    .uri("http://auth-service/validate")
+    .retrieve()
+    .bodyToMono(TokenDto.class)
+    .map(t -> exchange)           // ← Token válido, devuelve exchange
+    .flatMap(chain::filter);      // ← Pasa al SIGUIENTE filtro o servicio
+```
+
+### Sin `chain.filter()` → La petición **NO llegaría** al servicio destino
+
+---
+
+## Resumen
+
+| Componente | Propósito |
+|------------|-----------|
+| `exchange` | Contiene la petición y respuesta HTTP completa |
+| `chain` | Permite continuar con el siguiente filtro/servicio |
+| `chain.filter(exchange)` | "Deja pasar" la petición al siguiente paso |
+
+**Piensa en `chain` como una cinta transportadora: si no llamas a `chain.filter()`, la petición se detiene en tu filtro.** 
+La clase `Config` estática es parte del patrón de diseño de Spring Cloud Gateway para filtros personalizados.
+
+## ¿Por qué existe?
+
+`AbstractGatewayFilterFactory<T>` es una clase genérica que espera un tipo de configuración. Aunque no la uses ahora, está ahí por estas razones:
+
+1. **Requisito del framework**: `AbstractGatewayFilterFactory` necesita un tipo genérico para su configuración
+2. **Extensibilidad futura**: Si necesitas agregar parámetros configurables al filtro (por ejemplo, rutas excluidas, timeout, etc.)
+3. **Convención de Spring**: Todos los filtros siguen este patrón uniforme
+
+## Ejemplo de uso si necesitaras configuración:
+
+```java
+public static class Config {
+    private String authServiceUrl;
+    private List<String> excludedPaths;
+    
+    // getters y setters
+}
+```
+
+Y en `application.yml`:
+```yaml
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: my-route
+          uri: http://my-service
+          filters:
+            - name: AuthFilter
+              args:
+                authServiceUrl: http://service-auth
+                excludedPaths: /public,/health
+```
+
+**En resumen**: Es una clase placeholder requerida por el framework. Puedes dejarla vacía si no necesitas configuración externa, pero debe existir para cumplir con la arquitectura de Spring Cloud Gateway.
+## ¿Cómo funciona `@ConfigurationProperties`?
+
+Spring Boot usa **convención sobre configuración** para mapear automáticamente el YAML a clases Java:
+
+### Mapeo automático
+
+1. **Prefix `protected-paths`** → Busca la raíz en el YAML
+2. **Campo `paths`** → Busca la propiedad `paths` bajo `protected-paths`
+3. **Tipo `List<PathConfig>`** → Convierte cada elemento del array YAML a objetos `PathConfig`
+
+### Proceso de binding
+
+```yaml
+protected-paths:        # ← prefix del @ConfigurationProperties
+  paths:                # ← nombre del campo en la clase
+    - uri: "..."        # ← propiedad de PathConfig
+      methods: [...]    # ← propiedad de PathConfig
+      roles: [...]      # ← propiedad de PathConfig
+```
+
+Spring Boot:
+1. **Detecta** `@ConfigurationProperties(prefix = "protected-paths")`
+2. **Busca** en el YAML la clave `protected-paths`
+3. **Mapea** `protected-paths.paths` al campo `private List<PathConfig> paths`
+4. **Crea objetos** `PathConfig` por cada elemento del array
+5. **Asigna valores** usando los setters de `PathConfig` (por eso necesita `@Data` o `@Setter`)
+
+### Requisitos para que funcione
+
+- `@Component` o `@Configuration` en la clase
+- `@ConfigurationProperties` con el prefix correcto
+- **Getters y setters** (`@Data`, `@Getter`, `@Setter`)
+- **Nombres exactos** entre el YAML y los campos Java
+- Dependencia `spring-boot-configuration-processor` (opcional pero recomendada)
+
+Es **"magia" de Spring Boot** que usa reflexión para mapear propiedades automáticamente. 🪄
