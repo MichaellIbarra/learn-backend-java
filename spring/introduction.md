@@ -1326,3 +1326,171 @@ protected-paths:
 
 El patrón `(/.*)?"` **NO es perjudicial** si todas las sub-rutas deben tener la misma restricción de seguridad. Si necesitas permisos diferentes para rutas específicas, usa patrones más específicos. 🔐
 EXPRESIONES REGULARES
+## ¿Qué pasa si NO usas `optional:`?
+
+Si **no usas** `optional:configserver:http://localhost:8085`, y el **Config Server no está disponible**, tu microservicio **FALLARÁ al iniciar** con un error similar a:
+
+```
+Could not locate PropertySource and the fail fast property is set, failing
+```
+
+## ¿Qué hace `optional:`?
+
+Permite que tu aplicación **inicie INCLUSO SI el Config Server no está disponible**:
+
+```yaml
+spring:
+  config:
+    import: optional:configserver:http://localhost:8085
+```
+
+## Comparación:
+
+| Sin `optional:` | Con `optional:` |
+|----------------|----------------|
+| ❌ Falla si Config Server está caído | ✅ Inicia con configuración local |
+| ❌ No puede funcionar sin Config Server | ✅ Usa `application.yml` local como fallback |
+| ✅ Asegura que siempre use config centralizada | ⚠️ Puede funcionar con config desactualizada |
+
+## ¿Cuándo usar cada uno?
+
+### **Sin `optional:`** (Recomendado para producción)
+```yaml
+spring:
+  config:
+    import: configserver:http://localhost:8085
+```
+- ✅ Garantiza que siempre use la configuración centralizada
+- ✅ Evita inconsistencias entre microservicios
+- ❌ Requiere que Config Server esté siempre disponible
+
+### **Con `optional:`** (Útil para desarrollo local)
+```yaml
+spring:
+  config:
+    import: optional:configserver:http://localhost:8085
+```
+- ✅ Permite desarrollar sin levantar Config Server
+- ✅ Usa configuración local si Config Server no responde
+- ⚠️ Puede causar comportamiento inconsistente en producción
+
+## Recomendación:
+
+Para **desarrollo local**, usa `optional:` para poder trabajar sin depender del Config Server:
+
+```yaml
+spring:
+  config:
+    import: optional:configserver:http://localhost:8085
+```
+
+Para **producción**, quita `optional:` para asegurar que siempre use la configuración centralizada.
+## Respuesta: NO es recomendado registrar Config Server en Eureka
+
+**Config Server debe mantenerse estático** por las siguientes razones:
+
+### ❌ Problemas de registrar Config Server en Eureka:
+
+1. **Dependencia circular**: Los servicios necesitan Config Server para obtener su configuración, incluyendo la configuración de Eureka
+2. **Bootstrap problem**: Config Server debe estar disponible ANTES que Eureka para que los servicios obtengan su configuración
+3. **Complejidad innecesaria**: Config Server es infrastructure, no business logic
+
+### ✅ Configuración correcta actual:
+
+Tu configuración actual es la **práctica recomendada**:
+
+````yaml
+spring:
+  application:
+    name: service-user
+  config:
+    import: optional:configserver:http://localhost:8085  # ✅ Correcto: URL estática
+````
+
+### 🐳 Para Docker, necesitas cambiar solo para containers:
+
+````yaml
+spring:
+  application:
+    name: service-user
+  config:
+    import: optional:configserver:http://server-config-server:8085  # Nombre del container
+  datasource:
+    url: jdbc:h2:mem:userdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: password
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://server-discovery:8761/eureka
+
+server:
+  port: 8080
+````
+
+### 📝 Configuraciones Docker necesarias:
+
+````yaml
+spring:
+  application:
+    name: server-config-server
+  cloud:
+    config:
+      server:
+        git:
+          uri: https://github.com/MichaellIbarra/spring-cloud-hotel-microservices-mvc.git
+          clone-on-start: true
+          default-label: main
+          search-paths: hotel-config-repo
+
+server:
+  port: 8085
+````
+
+### 🔧 Docker Compose actualizado:
+
+````yaml
+version: '3.8'
+
+services:
+  server-config-server:
+    image: server-config-server:latest
+    container_name: server-config-server
+    ports:
+      - "8085:8085"
+    networks:
+      - hotel-network
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+
+  server-discovery:
+    image: server-discovery:latest
+    container_name: server-discovery
+    ports:
+      - "8761:8761"
+    networks:
+      - hotel-network
+    depends_on:
+      - server-config-server
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+
+  service-user:
+    image: service-user:latest
+    container_name: service-user
+    networks:
+      - hotel-network
+    depends_on:
+      - server-config-server
+      - server-discovery
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+
+networks:
+  hotel-network:
+    driver: bridge
+````
+
+**Resumen**: Mantén Config Server con URL estática. Solo cambia `localhost` por el nombre del container en Docker. NO registres Config Server en Eureka.
