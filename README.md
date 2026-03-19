@@ -10,6 +10,7 @@ Monolítica: Toda la aplicación (lógica, acceso a datos, interfaz) se compila 
 Microservicios: La aplicación se divide en servicios pequeños, independientes y delimitados por contexto de negocio. Cada uno tiene su propia base de datos y se comunican por red (APIs, eventos).
 SOA (Arquitectura Orientada a Servicios): Similar a los microservicios pero más tradicional/enpresarial ("Service by Service"). Los servicios suelen ser más grandes y se comunican a través de un bus central (ESB).
 Serverless (Sin Servidor): El código se ejecuta en funciones temporales gestionadas por la nube (ej. AWS Lambda) que solo se activan cuando hay una petición.
+
 ### ARQUITECTURA DE APLICACIÓN (El nivel MICRO o Estructura Interna)
 Define cómo se organiza el código dentro de un proyecto. Responde a la pregunta: "¿Cómo separo las responsabilidades en mi código para que sea mantenible?"
 (Nota: Un Monolito o un Microservicio individual pueden usar internamente cualquiera de estas arquitecturas).
