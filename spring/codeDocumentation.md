@@ -29,19 +29,61 @@ Map<String, Object> mapEntries = Map.ofEntries(
 - **`Map.of` / `Map.ofEntries`**: Métodos estáticos de fábrica (Java 9+) para crear mapas inmutables de solo lectura (no aceptan `null`). Usar `Map.of` para mapas pequeños y `Map.ofEntries` para más de 10 pares.
 
 **Notas rápidas (prácticas):**
-- `Map` es muy útil para armar payloads rápidos (por ejemplo, errores), pero para APIs medianas/grandes suele ser mejor usar DTOs/records para mantener consistencia.
-List<Grade> highGrades = grades.stream().filter(g -> g.getScore() > 8).toList();
-
-// peek(): debugging/logging (evitar lógica de negocio aquí)
-List<Grade> debug = grades.stream().peek(g -> logger.info("Grade: {}", g.getId())).toList();
-```
-
-**toList() vs collect(Collectors.toList())**
-- `toList()` (Java 16+): retorna lista inmutable.
-- `collect(Collectors.toList())` (Java 8+): suele retornar lista mutable.
+- `Map` es muy útil para armar payloads rápidos (por ejemplo, respuestas de error), pero para APIs medianas/grandes suele ser mejor usar DTOs/records para mantener consistencia.
+- `Map.of(...)` / `Map.ofEntries(...)` crean mapas inmutables (no aceptan `null`).
 
 **Casos de uso / ¿Cuándo elegirlo?**
 - Reestructurar de forma limpia un dataset traído de BBDD sin usar decenas de bucles `for` y bloques `if`.
+
+---
+
+### Arrays vs Listas
+
+**¿Qué es?**
+- Un array (`T[]`) tiene tamaño fijo.
+- Una `List<T>` es dinámica (puedes agregar/quitar elementos).
+
+**Ejemplo de Código:**
+```java
+Grade[] gradesArray = restTemplate.getForObject(url, Grade[].class);
+List<Grade> gradesList = gradesArray == null ? List.of() : Arrays.asList(gradesArray);
+```
+
+**Explicación / Desglose:**
+- En consumo HTTP es común recibir colecciones como arrays (`Grade[].class`) por simplicidad del deserializador.
+- Para lógica de negocio conviene trabajar con `List` (más flexible).
+
+**Casos de uso / ¿Cuándo elegirlo?**
+- Arrays: mapeo directo de respuestas de APIs externas.
+- Listas: transformación, filtrado y enriquecimiento en backend.
+
+---
+
+### Stream API (map, filter, peek, toList)
+
+**¿Qué es?**
+API funcional/declarativa para procesar colecciones (transformar, filtrar, ordenar) sin escribir bucles imperativos.
+
+**Ejemplo de Código:**
+```java
+List<Grade> highGrades = gradesList.stream()
+  .filter(g -> g.getScore() > 8)
+  .toList();
+
+List<Grade> debug = gradesList.stream()
+  .peek(g -> logger.info("Grade: {}", g.getId()))
+  .toList();
+```
+
+**Explicación / Desglose:**
+- `map()`: transforma cada elemento (por ejemplo, extraer un campo o crear un DTO).
+- `filter()`: se queda con los elementos que cumplan una condición.
+- `peek()`: útil para logs/debug (evitar lógica de negocio aquí).
+- `toList()` (Java 16+): retorna lista inmutable.
+- `collect(Collectors.toList())` (Java 8+): suele retornar lista mutable (`ArrayList`).
+
+**Casos de uso / ¿Cuándo elegirlo?**
+- Enriquecer datos en cadena (por ejemplo, cruzar grades con hotels).
 
 ---
 
@@ -127,6 +169,75 @@ public class WebClientConfig {
 }
 ```
 
+---
+
+### @Configuration vs @Component (cuándo usar cada uno)
+
+**¿Qué es?**
+- `@Configuration`: marca una clase como fuente de configuración (define beans con métodos `@Bean`).
+- `@Component`: marca una clase como bean autodetectable por component-scan (la clase completa es el bean).
+
+**Ejemplo de Código:**
+```java
+@Configuration
+public class PasswordEncoderConfig {
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+}
+
+@Component
+public class JwtProvider {
+    @Value("${jwt.secret}")
+    private String secret;
+}
+```
+
+**Explicación / Desglose:**
+- En `@Configuration`, Spring usa proxies (CGLIB) para asegurar que un `@Bean` se cree una sola vez (por defecto singleton) aunque lo llames múltiples veces dentro de la config.
+- En `@Component`, Spring instancia la clase directamente (y gestiona inyección de dependencias/propiedades como `@Value`).
+
+**Casos de uso / ¿Cuándo elegirlo?**
+- `@Configuration`: cuando necesitas crear/configurar beans (especialmente de librerías externas) o una configuración más compleja.
+- `@Component`: cuando tu clase ES el servicio/utilidad/componente de negocio.
+
+---
+
+### @ConfigurationProperties (binding de YAML a clases)
+
+**¿Qué es?**
+Mecanismo de Spring Boot para mapear propiedades (`application.yml`) a clases Java tipadas usando un `prefix`.
+
+**Ejemplo de Código:**
+```java
+@Component
+@ConfigurationProperties(prefix = "protected-paths")
+public class ProtectedPathsProperties {
+    private List<PathConfig> paths;
+
+    public List<PathConfig> getPaths() { return paths; }
+    public void setPaths(List<PathConfig> paths) { this.paths = paths; }
+}
+```
+
+```yaml
+protected-paths:
+  paths:
+    - uri: "/api/v1/users(/.*)?"
+      methods: ["GET"]
+      roles: ["ADMIN", "USER"]
+```
+
+**Explicación / Desglose:**
+- Spring busca el `prefix` (`protected-paths`) y asigna campos por nombre (por ejemplo, `paths`).
+- Para listas de objetos, crea una instancia por cada elemento del array YAML.
+- Requiere getters/setters (o Lombok `@Data`).
+- Recomendado (opcional): agregar `spring-boot-configuration-processor` para autocompletado en el IDE.
+
+**Casos de uso / ¿Cuándo elegirlo?**
+- Configuración de reglas (rutas protegidas, timeouts, límites) sin hardcodear.
+
 ## 3. Spring Web y Controladores
 
 ### ResponseEntity
@@ -173,6 +284,45 @@ return ResponseEntity.status(HttpStatus.CREATED)
 | `.status(...)` | Cuando el estado debe ser adaptativo mediante lógica compleja de negocio. |
 | `.ok()` | Para el 90% de llamados tipo `GET` o lecturas resolutivas limpias. |
 | `.noContent()` | Ideal para `DELETE` y `PUT` (actualizaciones exitosas que evitan gastar ancho de banda retornando el mismo objeto modificado). |
+
+---
+
+### Manejo global de excepciones (@ControllerAdvice / @RestControllerAdvice)
+
+**¿Qué es?**
+Un manejador global captura excepciones lanzadas por cualquier controlador y devuelve respuestas consistentes (sin llenar controladores de `try/catch`).
+
+**Ejemplo de Código:**
+```java
+public class ResourceNotFoundException extends RuntimeException {
+  public ResourceNotFoundException() { super("Resource not found"); }
+  public ResourceNotFoundException(String message) { super(message); }
+}
+
+@RestControllerAdvice
+public class GlobalExceptionHandler {
+
+  @ExceptionHandler(ResourceNotFoundException.class)
+  public ResponseEntity<String> handleNotFound(ResourceNotFoundException ex) {
+    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+  }
+
+  @ExceptionHandler(Exception.class)
+  public ResponseEntity<String> handleGeneric(Exception ex) {
+    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+      .body("Error interno del servidor");
+  }
+}
+```
+
+**Explicación / Desglose:**
+- `@RestControllerAdvice` aplica a todos los controladores REST y serializa la respuesta a JSON si devuelves objetos.
+- `@ExceptionHandler(...)` define cómo responder para un tipo concreto de excepción.
+- Las excepciones personalizadas (unchecked) mejoran claridad y permiten mapear 404/400/500 de forma correcta.
+
+**Casos de uso / ¿Cuándo elegirlo?**
+- APIs con respuestas de error estandarizadas.
+- Mantener controladores limpios y separación de responsabilidades.
 
 ## 4. Clientes HTTP (RestTemplate)
 
@@ -281,12 +431,181 @@ spring:
     password: ${DB_PASSWORD}
 ```
 
+**Explicación / Desglose (optional:configserver):**
+- Si NO usas `optional:` y el Config Server está caído, el microservicio puede fallar al iniciar.
+- Con `optional:` el microservicio puede iniciar usando config local como fallback (útil en desarrollo).
+
+**¿Cuándo usar `optional:`?**
+```yaml
+# Producción (recomendado): exigir config central
+spring:
+  config:
+    import: configserver:http://localhost:8085
+```
+
+```yaml
+# Desarrollo local: permitir iniciar sin Config Server
+spring:
+  config:
+    import: optional:configserver:http://localhost:8085
+```
+
 **Recomendación práctica (separación):**
 - En el microservicio deja solo `spring.application.name`, `spring.config.import` y el perfil.
 - En el repo del Config Server vive todo lo demás (DB, puertos, eureka, propiedades de negocio).
 
 **Casos de uso / ¿Cuándo elegirlo?**
 - Previene tener que empacar, compilar y desplegar nuevamente toda tu imagen Docker porque simplemente haya mutado un simple puerto numérico o password en la nube, abstraes la configuración sacándola del frágil `.jar`.
+
+**¿Registrar Config Server en Eureka? (recomendación: NO)**
+- Evitas dependencia circular: los servicios necesitan Config Server antes de poder configurar Eureka.
+- Config Server es infraestructura y suele ser estable (URL estática).
+
+**Ejemplo (Docker: reemplazar localhost por nombre del container):**
+```yaml
+spring:
+  application:
+    name: service-user
+  config:
+    import: optional:configserver:http://server-config-server:8085
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://server-discovery:8761/eureka
+```
+
+**Ejemplo (Config Server en Docker):**
+```yaml
+spring:
+  application:
+    name: server-config-server
+  cloud:
+    config:
+      server:
+        git:
+          uri: https://github.com/MichaellIbarra/spring-cloud-hotel-microservices-mvc.git
+          clone-on-start: true
+          default-label: main
+          search-paths: hotel-config-repo
+
+server:
+  port: 8085
+```
+
+**Ejemplo (Docker Compose - referencia):**
+```yaml
+version: '3.8'
+
+services:
+  server-config-server:
+    image: server-config-server:latest
+    container_name: server-config-server
+    ports:
+      - "8085:8085"
+    networks:
+      - hotel-network
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+
+  server-discovery:
+    image: server-discovery:latest
+    container_name: server-discovery
+    ports:
+      - "8761:8761"
+    networks:
+      - hotel-network
+    depends_on:
+      - server-config-server
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+
+  service-user:
+    image: service-user:latest
+    container_name: service-user
+    networks:
+      - hotel-network
+    depends_on:
+      - server-config-server
+      - server-discovery
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+
+networks:
+  hotel-network:
+    driver: bridge
+```
+
+### Spring Cloud Gateway: AuthFilter (AbstractGatewayFilterFactory)
+
+**¿Qué es?**
+Un filtro personalizado de Gateway que intercepta requests antes de enviarlos al microservicio destino (por ejemplo, para validar un JWT llamando a un auth-service).
+
+**Ejemplo de Código:**
+```java
+public class AuthFilter extends AbstractGatewayFilterFactory<AuthFilter.Config> {
+
+    private final WebClient.Builder webClient;
+
+    public AuthFilter(WebClient.Builder builder) {
+        super(Config.class);
+        this.webClient = builder;
+    }
+
+    public static class Config {
+        // placeholder: aquí irían propiedades configurables si las necesitas
+    }
+
+    @Override
+    public GatewayFilter apply(Config config) {
+        return (exchange, chain) -> {
+            // ...validar headers/token...
+            return webClient.build()
+                .post()
+                .uri("http://auth-service/validate")
+                .retrieve()
+                .bodyToMono(TokenDto.class)
+                .map(t -> exchange)
+                .flatMap(chain::filter);
+        };
+    }
+}
+```
+
+**Explicación / Desglose:**
+- `extends AbstractGatewayFilterFactory<AuthFilter.Config>`: el genérico define el tipo de configuración del filtro.
+- Clase `Config` (static): patrón del framework; puede ir vacía si no expones args en YAML.
+- `super(Config.class)`: obligatorio para que Spring sepa qué config mapear.
+- `map(...)` vs `flatMap(...)`: `chain.filter(exchange)` retorna `Mono<Void>`, por eso se usa `flatMap` para evitar `Mono<Mono<Void>>`.
+
+**exchange y chain (idea clave):**
+- `ServerWebExchange exchange`: request + response + atributos (contexto completo en WebFlux).
+- `GatewayFilterChain chain`: permite continuar con el siguiente filtro o con el servicio destino usando `chain.filter(exchange)`.
+
+**Casos de uso / ¿Cuándo elegirlo?**
+- Gateways con validación centralizada de token/autorización.
+- Pre-filtrar rutas protegidas antes de entrar a la malla de microservicios.
+
+### Expresiones regulares en rutas (ej: `(/.*)?`)
+
+**¿Qué es?**
+Patrones regex para agrupar rutas (con o sin sub-rutas) en reglas de seguridad/configuración.
+
+**Ejemplo de Código:**
+```yaml
+- uri: "/api/v1/users(/.*)?"
+  methods:
+    - POST
+  roles:
+    - ADMIN
+```
+
+**Explicación / Desglose:**
+- `(/.*)?` hace que el patrón aplique tanto a `/api/v1/users` como a `/api/v1/users/123/...`.
+- No es “perjudicial” si TODAS las subrutas comparten la misma regla. Si necesitas permisos distintos, crea patrones más específicos.
+
+**Casos de uso / ¿Cuándo elegirlo?**
+- Seguridad por prefijo cuando tus subrutas tienen la misma política.
 
 ## 7. Resiliencia, Tolerancia a Fallos y Monitoreo
 
@@ -371,4 +690,45 @@ management:
 
 **Casos de uso / ¿Cuándo elegirlo?**
 - En Kubernetes o infraestructuras nativas de orquestación donde el clúster requiere *Health Checks / Pings* que informen robóticamente si el contenedor es apto, y decidir en base a sus diagnósticos su eliminación o su redirección de tráfico mediante load balancers.
+
+## 8. Seguridad y Autenticación (JWT)
+
+### Dependencias JJWT (jjwt-api / jjwt-impl / jjwt-jackson)
+
+**¿Qué es?**
+JJWT es modular (desde 0.10.0). Necesitas el API para compilar y la implementación + serialización para runtime.
+
+**Ejemplo de Código:**
+```xml
+<!-- API (compile time) -->
+<dependency>
+  <groupId>io.jsonwebtoken</groupId>
+  <artifactId>jjwt-api</artifactId>
+  <version>0.13.0</version>
+</dependency>
+
+<!-- Implementación (runtime) -->
+<dependency>
+  <groupId>io.jsonwebtoken</groupId>
+  <artifactId>jjwt-impl</artifactId>
+  <version>0.13.0</version>
+  <scope>runtime</scope>
+</dependency>
+
+<!-- Serialización JSON (runtime) -->
+<dependency>
+  <groupId>io.jsonwebtoken</groupId>
+  <artifactId>jjwt-jackson</artifactId>
+  <version>0.13.0</version>
+  <scope>runtime</scope>
+</dependency>
+```
+
+**Explicación / Desglose:**
+- `jjwt-api`: contiene interfaces/clases públicas usadas en tu código.
+- `jjwt-impl`: contiene implementación real (si falta, fallas en runtime con `ClassNotFoundException`).
+- `jjwt-jackson`: serializa/deserializa claims con Jackson.
+
+**Casos de uso / ¿Cuándo elegirlo?**
+- Proyectos con autenticación basada en JWT (access tokens, claims, expiración).
 
