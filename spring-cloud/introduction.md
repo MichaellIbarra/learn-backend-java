@@ -198,9 +198,9 @@ spec:
 
 ## Términos comunes
 - asíncrono: que no ocurre al mismo proceso o tiempo.
+- síncrono: que ocurre al mismo proceso o tiempo.
 - latencia: retraso en la comunicación o procesamiento de datos.
 - tolerancia a fallos: capacidad de un sistema para continuar operando correctamente en presencia de fallos o errores.
-- síncrono: que ocurre al mismo proceso o tiempo.
 - escalabilidad: capacidad de un sistema para adaptarse a un aumento de carga.
 - allanan: facilitar o hacer más sencillo un proceso.
 - granularidad: nivel de detalle o especificidad en la división de un sistema en partes más pequeñas.
