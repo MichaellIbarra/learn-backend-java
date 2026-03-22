@@ -732,3 +732,391 @@ JJWT es modular (desde 0.10.0). Necesitas el API para compilar y la implementaci
 **Casos de uso / ¿Cuándo elegirlo?**
 - Proyectos con autenticación basada en JWT (access tokens, claims, expiración).
 
+## 9. Persistencia y Acceso a Datos (SQL/NoSQL)
+
+### JDBC (Java Database Connectivity)
+
+**¿Qué es?**
+La base “de bajo nivel” en Java para conectarse a bases de datos relacionales. Tú escribes SQL directamente y manejas conexiones, statements y resultados.
+
+**Ejemplo de Código:**
+```java
+try (Connection conn = DriverManager.getConnection(url, user, pass);
+     PreparedStatement ps = conn.prepareStatement("SELECT id, name FROM users WHERE id = ?")) {
+
+  ps.setLong(1, 10L);
+  try (ResultSet rs = ps.executeQuery()) {
+    if (rs.next()) {
+      Long id = rs.getLong("id");
+      String name = rs.getString("name");
+    }
+  }
+}
+```
+
+**Explicación / Desglose:**
+- Nivel bajo: control total, pero más código “boilerplate”.
+- Ideal para entender el flujo real: conexión → statement → resultset.
+- Aplica a SQL relacional (MySQL, PostgreSQL, Oracle, etc.).
+
+**Casos de uso / ¿Cuándo elegirlo?**
+- Consultas muy específicas o performance tuning fino.
+- Proyectos donde NO quieres/puedes usar ORM.
+
+---
+
+### JPA (Java Persistence API)
+
+**¿Qué es?**
+Una especificación (reglas/contratos) que define cómo mapear objetos Java ↔ tablas (ORM) mediante anotaciones como `@Entity`, `@Id`, etc. No es una implementación.
+
+**Ejemplo de Código:**
+```java
+@Entity
+public class User {
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
+
+  private String name;
+}
+```
+
+**Explicación / Desglose:**
+- JPA define el “qué”: entidades, relaciones, contexto de persistencia.
+- Para que funcione necesitas una implementación (por ejemplo, Hibernate).
+
+**Casos de uso / ¿Cuándo elegirlo?**
+- CRUD y relaciones típicas en bases de datos relacionales.
+
+---
+
+### Anotaciones comunes (SQL con JPA)
+
+**¿Qué es?**
+Un “set” de anotaciones **exclusivas para bases de datos relacionales (SQL)**. Las usas para mapear clases Java a tablas, definir columnas, IDs autonuméricos, y relaciones (joins). La mayoría vienen de `jakarta.persistence.*` (o `javax.persistence.*` en proyectos antiguos). Ninguna de estas anotaciones (`@Column`, `@OneToMany`, `@JoinColumn`, etc.) funciona en MongoDB o Redis.
+
+**Ejemplo de Código:**
+```java
+@Entity
+@Table(name = "users")
+public class User {
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
+
+  @Column(name = "email", nullable = false, unique = true, length = 150)
+  private String email;
+
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
+  private Role role;
+
+  @OneToOne(optional = true, fetch = FetchType.LAZY)
+  @JoinColumn(name = "profile_id")
+  private Profile profile;
+
+  @Transient
+  private String computed;
+
+  @Version
+  private Long version;
+}
+```
+
+**Explicación / Desglose:**
+- **Básicas de entidad/tabla**
+  - `@Entity`: marca la clase como entidad persistible (tabla SQL).
+  - `@Table(name = "...")`: nombre de tabla (si no coincide con el de la clase).
+- **ID y generación**
+  - `@Id`: clave primaria.
+  - `@GeneratedValue(...)`: cómo se genera el ID.
+    - `IDENTITY`: lo genera la DB (muy común en MySQL/PostgreSQL con serial/identity).
+    - `SEQUENCE`: usa secuencias (común en PostgreSQL/Oracle).
+    - `AUTO`: deja que el proveedor elija.
+- **Columnas y tipos**
+  - `@Column(...)`: configura columna (nombre, nullability, unique, length, etc.).
+  - `@Enumerated(EnumType.STRING)`: guarda enums como texto (más legible/estable que `ORDINAL`).
+  - `@Lob`: para texto largo o binarios (depende del motor SQL).
+  - `@Temporal(...)`: solo aplica a `java.util.Date/Calendar` (no a `java.time.*`).
+- **Relaciones (joins)**
+  - `@OneToOne`, `@ManyToOne`, `@OneToMany`, `@ManyToMany`: cardinalidad.
+  - `@JoinColumn`: define la FK/columna de join.
+  - `@JoinTable`: tabla intermedia (típico en `@ManyToMany`).
+- **Excluir campos del mapeo**
+  - `@Transient` (NO es `@@Transient`): el campo no se persiste.
+- **Concurrencia (optimistic locking)**
+  - `@Version`: evita “pisarse” updates concurrentes en tablas SQL (muy recomendado). *(Nota: En Mongo/NoSQL existe un equivalente exacto llamado igual, pero del paquete `org.springframework.data.annotation.Version`).*
+
+**Casos de uso / ¿Cuándo elegirlo?**
+- Cuando trabajas con SQL y quieres modelar tablas/relaciones con entidades.
+- Cuando necesitas control del mapeo (nombres de columnas, constraints, relaciones, versionado).
+
+---
+
+### Hibernate (implementación de JPA)
+
+**¿Qué es?**
+Una implementación popular de JPA (ORM completo). Automatiza la generación/ejecución de SQL y maneja el ciclo de vida de entidades.
+
+**Ejemplo de Código:**
+```java
+// Con JPA + Hibernate normalmente trabajas con EntityManager/Repositories,
+// Hibernate ejecuta el SQL por debajo.
+```
+
+**Explicación / Desglose:**
+- Relación:
+  - JPA = especificación (reglas)
+  - Hibernate = implementación (motor)
+- Traduce operaciones sobre entidades a SQL.
+
+**Casos de uso / ¿Cuándo elegirlo?**
+- Proyectos con dominio rico y relaciones.
+- Cuando quieres evitar SQL manual en la mayoría de casos.
+
+---
+
+### Spring Data JPA
+
+**¿Qué es?**
+Una abstracción sobre JPA que reduce mucho código repetido. Genera implementaciones de repositorios automáticamente.
+
+**Ejemplo de Código:**
+```java
+public interface UserRepository extends JpaRepository<User, Long> {
+  Optional<User> findByName(String name);
+}
+```
+
+**Explicación / Desglose:**
+- Te evita implementar DAOs manuales.
+- Permite métodos por convención (`findBy...`) y queries (JPQL/Native) cuando lo necesitas.
+
+**Casos de uso / ¿Cuándo elegirlo?**
+- CRUD rápido y mantenible con SQL relacional.
+
+---
+
+### MyBatis
+
+**¿Qué es?**
+Framework “SQL-first”: tú escribes SQL (en XML o anotaciones) y MyBatis mapea resultados a objetos. Menos magia que ORM.
+
+**Ejemplo de Código:**
+```java
+@Mapper
+public interface UserMapper {
+  @Select("SELECT id, name FROM users WHERE id = #{id}")
+  User findById(@Param("id") Long id);
+}
+```
+
+**Explicación / Desglose:**
+- Mantienes control del SQL.
+- Ideal cuando tu equipo prefiere queries explícitas y mapeo claro.
+
+**Casos de uso / ¿Cuándo elegirlo?**
+- Consultas complejas/reporting.
+- Sistemas donde el SQL es parte central del diseño.
+
+---
+
+### jOOQ
+
+**¿Qué es?**
+Una librería DSL (SQL type-safe) para construir SQL con Java de forma tipada, manteniendo el control del SQL y evitando strings sueltos.
+
+**Ejemplo de Código:**
+```java
+// Ejemplo conceptual (la API real depende del código generado por jOOQ)
+// Result<Record> result = dsl.selectFrom(USERS).where(USERS.ID.eq(10L)).fetch();
+```
+
+**Explicación / Desglose:**
+- SQL con tipado (menos errores por columnas/joins mal escritos).
+- Suele usar generación de clases a partir del schema.
+
+**Casos de uso / ¿Cuándo elegirlo?**
+- Equipos que quieren control SQL + seguridad de tipos.
+
+---
+
+### NoSQL (MongoDB) + Spring Data MongoDB
+
+**¿Qué es?**
+NoSQL (documentos) como MongoDB no usa tablas/joins tradicionales; almacena documentos (JSON/BSON). Spring Data MongoDB te da repositorios similares a JPA pero para Mongo.
+
+**Ejemplo de Código:**
+```java
+@Document(collection = "users")
+public class UserDoc {
+  @Id
+  private String id;
+  private String name;
+}
+
+public interface UserDocRepository extends MongoRepository<UserDoc, String> {}
+```
+
+**Explicación / Desglose:**
+- MongoDB: modelo flexible orientado a documentos.
+- Spring Data MongoDB: repositorios y mapping para Mongo.
+
+**Casos de uso / ¿Cuándo elegirlo?**
+- Datos semi-estructurados, evolución rápida de esquema.
+- Catálogos, contenido, eventos, logs.
+
+---
+
+### MongoDB Reactivo (Spring Data Reactive MongoDB)
+
+**¿Qué es?**
+Acceso a MongoDB usando el stack reactivo (WebFlux) con `Mono`/`Flux`. Es útil cuando tu aplicación es reactiva end-to-end (por ejemplo, Gateway/WebFlux + Mongo reactivo).
+
+**Ejemplo de Código:**
+```java
+public interface UserDocReactiveRepository
+    extends ReactiveMongoRepository<UserDoc, String> {
+  Flux<UserDoc> findByName(String name);
+}
+
+@RestController
+@RequestMapping("/users")
+public class UserReactiveController {
+
+  private final UserDocReactiveRepository repo;
+
+  public UserReactiveController(UserDocReactiveRepository repo) {
+    this.repo = repo;
+  }
+
+  @GetMapping
+  public Flux<UserDoc> byName(@RequestParam String name) {
+    return repo.findByName(name);
+  }
+}
+```
+
+**Explicación / Desglose:**
+- `ReactiveMongoRepository` devuelve tipos reactivos (`Mono`/`Flux`).
+- Para que sea realmente no bloqueante, tu controlador y tu capa de datos deben ser reactivos.
+
+**Casos de uso / ¿Cuándo elegirlo?**
+- APIs WebFlux con alta concurrencia y acceso a Mongo.
+- Pipelines de eventos/streams donde quieres backpressure.
+
+---
+
+### Anotaciones comunes (NoSQL con Spring Data: Mongo/Redis)
+
+**¿Qué es?**
+Anotaciones para mapear clases Java a documentos/colecciones (Mongo) o hashes/keys (Redis) usando Spring Data. Ojo: algunas se llaman parecido a JPA pero pertenecen a otros paquetes (`org.springframework.data.*`).
+
+**Ejemplo de Código:**
+```java
+@Document(collection = "users")
+public class UserDoc {
+  @org.springframework.data.annotation.Id
+  private String id;
+
+  @Field("full_name")
+  private String name;
+
+  @Indexed(unique = true)
+  private String email;
+
+  @org.springframework.data.annotation.Transient
+  private String computed;
+
+  @org.springframework.data.annotation.Version
+  private Long version;
+}
+```
+
+**Explicación y Equivalencias (vs SQL):**
+- **Colecciones vs Tablas**: En vez de `@Table` / `@Entity`, usas `@Document(collection = "...")`.
+- **Primary Key autonumérica**: En vez de `@GeneratedValue`, en Mongo si pones `@Id` (Spring Data) sobre un `String` o `ObjectId`, MongoDB genera su propio UUID automático (Object ID). No existen secuencias.
+- **Columnas**: En vez de `@Column(name="...")`, usas `@Field("...")` para cambiar el nombre de la propiedad en el JSON/BSON. No se necesita definir nullability o length porque Mongo es schema-less.
+- **Índices**: Para optimizar búsquedas se usa `@Indexed` y `@CompoundIndex` (en SQL suele ir dentro de `@Table` o `@Column`).
+- **Relaciones (Joins vs Embebidos)**: En Mongo **NO** usas `@OneToMany`, `@ManyToOne` ni `@JoinColumn`. Tienes dos alternativas:
+  1. **Documentos embebidos (Recomendado)**: Pones un sub-objeto o una `List<SubObjeto>`. Todo se guarda anidado dentro del mismo documento (una de las mayores ventajas de NoSQL).
+  2. **Referencias**: Usas `@DBRef` para simular un join. Guarda el ID de la otra colección y Spring Data hace otra query "por detrás" para traerlo.
+- **Auditoría y control de concurrencia**
+  - `@CreatedDate`, `@LastModifiedDate`: timestamps automáticos (requiere auditoría habilitada).
+  - `@Version`: optimistic locking también existe en Spring Data.
+- **Excluir campos del mapeo**
+  - `org.springframework.data.annotation.Transient`: no se persiste.
+    - No es el mismo `@Transient` de JPA (`jakarta.persistence.Transient`).
+- **Redis (keys/hashes)**
+  - `@RedisHash("...")`: mapea un objeto a un hash con prefijo.
+  - `@TimeToLive`: TTL por entidad (si lo necesitas para expiración de cache).
+
+**Casos de uso / ¿Cuándo elegirlo?**
+- Mongo: datos flexibles (documentos) y queries por campos/índices.
+- Redis: cache/sesiones/objetos con expiración (TTL) y latencia muy baja.
+
+---
+
+### Redis (cache) + Spring Data Redis
+
+**¿Qué es?**
+Redis es un almacén en memoria usado comúnmente como cache (y otras estructuras). Spring Data Redis integra acceso a Redis.
+
+**Ejemplo de Código:**
+```java
+@Service
+public class UserCacheService {
+  private final StringRedisTemplate redis;
+
+  public UserCacheService(StringRedisTemplate redis) {
+    this.redis = redis;
+  }
+
+  public void putName(String id, String name) {
+    redis.opsForValue().set("user:name:" + id, name);
+  }
+}
+```
+
+**Explicación / Desglose:**
+- Ideal para reducir latencia y carga de BD.
+- Se usa como cache (TTL), sesiones, rate limiting, etc.
+
+**Nota (Redis reactivo):**
+- Si estás en WebFlux, puedes usar `ReactiveRedisTemplate` para evitar operaciones bloqueantes.
+
+**Casos de uso / ¿Cuándo elegirlo?**
+- Cache de lecturas frecuentes (profiles, catálogos, configuración).
+
+---
+
+### Reactive vs MVC (WebFlux vs Spring MVC)
+
+**¿Qué es?**
+- **Spring MVC**: modelo tradicional bloqueante (threads por request).
+- **Spring WebFlux (Reactive)**: modelo no bloqueante basado en `Mono`/`Flux`.
+
+**Ejemplo de Código:**
+```java
+// MVC
+@GetMapping("/users/{id}")
+public User getUser(@PathVariable Long id) {
+  return service.findById(id);
+}
+
+// WebFlux
+@GetMapping("/users/{id}")
+public Mono<User> getUserReactive(@PathVariable Long id) {
+  return service.findByIdReactive(id);
+}
+```
+
+**Explicación / Desglose:**
+- Reactive requiere drivers/reactive stack para que sea realmente no bloqueante.
+- Ejemplos típicos: Mongo Reactive y WebClient (no bloqueante).
+
+**Casos de uso / ¿Cuándo elegirlo?**
+- MVC: la mayoría de APIs CRUD tradicionales.
+- Reactive: alta concurrencia, streams/eventos, IO intensivo, gateways.
+
