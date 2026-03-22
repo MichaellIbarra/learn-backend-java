@@ -4,49 +4,6 @@
 - Patrones como: Configuración distribuida, Registro de servicios, enrutamiento, llamada de servicios, balanceo de carga, mensajería, monitorización, tolerancia a fallos, entre otros.
 
 
-## Conocimientos previos
-- Java SE 8 o superior
-- Base de datos
-- Spring Boot y Spring Framework
-- Git
-
-## Contenido del curso
-- Conceptos básico de los microservicios.
-- Registro de microservicios en Eureka Server.
-- Manejo de Spring Cloud Gateway.
-- Resiliencia y tolerancia de fallos con Spring Cloud Circuit Breaker.
-- Manejjo de Spring Cloud Config Server.
-- Comunicación de microservicios con Feign Client y Rest Template.
-- Trazabilidad distribuida con Zipkin y Sleuth.
-- Monitoreo con Prometheus y Grafana.
-- Mensajería de microservicios con Apache Kafka.
-- Mensajería de microservicios con RabbitMQ.
-- Patrón CQRS en la arquitectura de microservicios.
-- Seguridad en implementación OKTA, Keycloak y JWT.
-- Implementación de protocolo gRPC para comunicación entre microservicios.
-- Despliegue de microservicios usando Docker.
-
-## Arquitectura Monolítica
-- Las arquitecturas monolíticas se basan en una única aplicación que contiene todas las funcionalidades, en ella todo el código está interconectado, mezclado y cualquier modificación afecta al producto en su totalidad. Trabajando en monolito, los diferentes equipos de desarrollo están obligados a actuar sobre un mismo código, lo que dilata los tiempos y la dificultad.
-    ### Características de la arquitectura monolítica
-    - Código unificado: Toda la funcionalidad de la aplicación está contenida en un solo código base.
-    - Despliegue único: La aplicación se despliega como una sola unidad.
-    - Escalabilidad limitada: La escalabilidad se realiza a nivel de toda la aplicación, lo que puede ser ineficiente.
-    - Mantenimiento complejo: Las actualizaciones y cambios pueden afectar a toda la aplicación, lo que dificulta el mantenimiento.
-    - Desarrollo lento: Los equipos de desarrollo pueden enfrentarse a cuellos de botella debido a la dependencia del código compartido.
-
-## Arquitectura SOA
-- La arquitectura orientada a servicios (SOA) es un tipo de diseño de software que permite reutilizar sus elementos gracias a las interfaces de servicios que se comunican a través de protocolos de red con un lenguaje común. Cada servicio es una unidad funcional independiente que puede ser utilizada por diferentes aplicaciones, su diferencia con los microservicios radica en que estos son más pequeños, autónomos y están diseñados para cumplir una única función, su enfoque de soa es para toda la empresa mientras que los microservicios se centran en aplicaciones específicas.
-
-## Arquitectura de Microservicios
-- El concepto de microservicios lo definió Martin Fowler en 2014 como un enfoque técnico para desarrollar aplicaciones coomo un conjunto de pequeños servicios. Se trata de unidades funcionales independientes que se ejecutan de manera autónoma en su propio proceso y que se comunican entre sí a través de APIs ligeras, generalmente utilizando HTTP/REST o mensajería asíncrona. Cada microservicio está diseñado para cumplir una única función o responsabilidad dentro de la aplicación global, lo que facilita su desarrollo, despliegue y escalabilidad de manera independiente.
-    ### Características de los microservicios
-    - Independencia: Cada módulo es un ejecutable en sí mismo y puede ser desplegado sin afectar a los demás.
-    - Granularidad: Cada microservicio se encarga de una única funcionalidad de negocio.
-    - Aplicación modular: Posibilidad de amplicar o reducir en función de la necesidad.
-    - Arquitectura distribuida: Cada microservicio dispone de su propia base de datos. Los modelos de software distribuido se han visto respaldados por la proliferación de proveedores Cloud, que allanan el camino a la puesta en marcha este tipo de arquitecturas.
-    - Tecnología heterogénea: Cada microservicio puede ser desarrollado con diferentes lenguajes de programación, frameworks o bases de datos, según las necesidades específicas del servicio.
-
 ## Eureka Server
 - Es un servicio de descrubrimiento desarrollado por Netflix que permite a los microservicios para el registro y localización, balanceo de carga y tolerancia a fallos. La función de Eureka es registrar las diferentes instancias de microservicios existentes, su localización, estado, metadatos, etc. De esta forma, cuando un microservicio necesita comunicarse con otro, puede consultar a Eureka para obtener la información necesaria para establecer la conexión.
     ### Funcionalidades principales de Eureka Server

@@ -6,8 +6,17 @@
 ### ESTILOS ARQUITECTÓNICOS (El nivel MACRO o de Despliegue)
 Define cómo se distribuye y despliega el sistema a gran escala. Responde a la pregunta: "¿El sistema es una sola pieza o varias piezas comunicándose?"
 
-Monolítica: Toda la aplicación (lógica, acceso a datos, interfaz) se compila y despliega como un solo bloque. Si algo falla, puede caer todo el sistema.
+Monolítica: Toda la aplicación (lógica, acceso a datos, interfaz) se compila y despliega como un single block. Si algo falla, puede caer todo el sistema.
+ - Código unificado: Toda la funcionalidad de la aplicación está contenida en un solo código base.
+ - Despliegue único: La aplicación se despliega como una sola unidad.
+ - Escalabilidad limitada: La escalabilidad se realiza a nivel de toda la aplicación, lo que puede ser ineficiente.
+ - Mantenimiento complejo: Las actualizaciones y cambios pueden afectar a toda la aplicación, lo que dificulta el mantenimiento.
+ - Desarrollo lento: Los equipos de desarrollo pueden enfrentarse a cuellos de botella debido a la dependencia del código compartido.
 Microservicios: La aplicación se divide en servicios pequeños, independientes y delimitados por contexto de negocio. Cada uno tiene su propia base de datos y se comunican por red (APIs, eventos).
+ - Independencia: cada módulo es un ejecutable en sí mismo, y puede ser desplegado sin afectar al resto.
+ - Granularidad: cada microservicio se encarga de una única funcionalidad de negocio (ej. gestión de usuarios, procesamiento de pagos).
+ - Aplicación modular: posibilidad de amplicar o reducir en función de la demanda, y de usar tecnologías distintas para cada servicio.
+ - Arquitectura distribuida: cada microservicio dispone de su propia base de datos. Los modelos de software distribuido se han visto respaldados por la proliferación de proveedores Cloud, que allanan el camino a la puesta en marcha de este tipo de arquitecturas.
 SOA (Arquitectura Orientada a Servicios): Similar a los microservicios pero más tradicional/enpresarial ("Service by Service"). Los servicios suelen ser más grandes y se comunican a través de un bus central (ESB).
 Serverless (Sin Servidor): El código se ejecuta en funciones temporales gestionadas por la nube (ej. AWS Lambda) que solo se activan cuando hay una petición.
 
