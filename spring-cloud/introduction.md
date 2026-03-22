@@ -1,8 +1,6 @@
 # Spring Cloud Introducción
-- Es un conjunto de herramientas y frameworks desarrollados que facilita la construcción y gestión de aplicaciones distribuidas y microservicios en entornos de nube.
-- Spring cloud proporciona varias herramientas o módulos para que desarrolladores construyan patrones de diseño comunes para resolver diferentes problemas de infraestructura en proyectos de microservicios y centrarse en su lógica de negocio.
+- Es un conjunto de herramientas y frameworks desarrollados que facilita la construcción y gestión de aplicaciones distribuidas y microservicios en entornos de nube, también se utilizan patrones de diseño comunes para resolver diferentes problemas de infraestructura en proyectos de microservicios y centrarse en su lógica de negocio.
 - Patrones como: Configuración distribuida, Registro de servicios, enrutamiento, llamada de servicios, balanceo de carga, mensajería, monitorización, tolerancia a fallos, entre otros.
-
 
 ## Eureka Server
 - Es un servicio de descrubrimiento desarrollado por Netflix que permite a los microservicios para el registro y localización, balanceo de carga y tolerancia a fallos. La función de Eureka es registrar las diferentes instancias de microservicios existentes, su localización, estado, metadatos, etc. De esta forma, cuando un microservicio necesita comunicarse con otro, puede consultar a Eureka para obtener la información necesaria para establecer la conexión.
