@@ -117,7 +117,6 @@ spec:
     - Flexibilidad en la configuración: Permite personalizar las solicitudes HTTP, incluyendo encabezados, parámetros, cuerpos, etc.
     - Soporte para diferentes formatos de datos: Permite trabajar con JSON, XML y otros formatos de datos.
 
-
 ## Load Balancing
 - Es una técnica utilizada para distribuir la carga de trabajo entre múltiples servidores o instancias de una aplicación con el objetivo de mejorar el rendimiento, la disponibilidad y la escalabilidad del sistema.
     ### Tipos de Load Balancing
@@ -150,7 +149,7 @@ spec:
     - Config Client: Las aplicaciones que consumen las configuraciones desde el Config Server.
     - Repositorio de configuración: El lugar donde se almacenan las configuraciones (por ejemplo, un repositorio Git).
 ## Patrón de diseño Circuit Breaker
-- Es un patrón muy parecido a un fusible, el cual se funde para evitar que una descarga eléctrica dañe un circuito. En el contexto de los microservicios, el patrón Circuit Breaker actúa como un interruptor que "rompe" la comunicación entre servicios cuando se detectan fallos repetidos o tiempos de respuesta lentos, evitando así que un fallo en un servicio afecte a toda la aplicación, este interruptor puede "cerrarse" nuevamente cuando el servicio afectado se recupera y vuelve a estar disponible.
+- Es un patrón muy parecido a un fusible, el cual se funde para evitar que una descarga eléctrica dañe un circuito. En el contexto de los microservicios, actúa como un interruptor que "rompe" la comunicación entre servicios cuando se detectan fallos repetidos o tiempos de respuesta lentos, evitando así que un fallo en un servicio afecte a toda la aplicación, este interruptor puede "cerrarse" nuevamente cuando el servicio afectado se recupera y vuelve a estar disponible.
     ### Origenes del patrón Circuit Breaker
     - Uno de los problemas más común en arquitectura distribuidas es que, algunos de los componentes comiencen a fallar, lo que esto puede implicar desde que dejemos realizar ventas, hasta detener la operación por completo, por lo que tener un plan B en caso de que algo falle siempre es recomendable, sobre todo en procesos críticos.
     ### Funcionalidades principales del patrón Circuit Breaker

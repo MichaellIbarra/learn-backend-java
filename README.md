@@ -32,7 +32,7 @@ Arquitectura Limpia (Clean Architecture / Onion): Muy similar a la hexagonal. De
 Son tácticas de diseño grandes que resuelven flujos de información y comunicación entre componentes del sistema. Pertenece totalmente a la arquitectura.
 - **Alcance**: Macro (Nivel de componentes, servicios, bases de datos, APIs).
 - **Problema que resuelven**: Cómo se comunican grandes bloques de la aplicación, cómo escalan y cómo fluye la información.
-- **Ejemplos**: CQRS, Event-Driven, Event Sourcing, BFF.
+- **Ejemplos**: CQRS, Event-Driven, Event Sourcing, Circuit Breaker, Saga.
 
 ---
 
