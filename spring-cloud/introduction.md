@@ -182,6 +182,14 @@ spec:
     - Propósito: Previene llamadas a servicios que fallan consistentemente
     - Mejor para: Fallos sistemáticos, servicios completamente caídos
     - Problema: Puede ser muy agresivo para errores temporales
+    ### Ubicación ideal del Circuit Breaker
+    - Capa correcta: Se debe implementar en la capa de Service o directamente en los clientes HTTP (como Feign Clients), no en el Controller.
+    - El problema en el Controller: Si envuelve todo el endpoint, el Circuit Breaker capturará excepciones de lógica de negocio (como - ResourceNotFoundException al buscar algo que no existe).
+    - Falsos positivos: Capturar excepciones de negocio hace que el circuito se abra innecesariamente y dispare métodos fallback en lugar de devolver el error correcto al usuario (ej. 404).
+    - Aislamiento efectivo: Al ubicarlo solo en las llamadas a otros microservicios, aseguras que el circuito actúe únicamente frente a verdaderas caídas de red o indisponibilidad de dependencias externas.
+    ### Uso de anotaciones de Resilience4j
+    - Como vimos anteriormente, las anotaciones como @CircuitBreaker, @Retry, o @Transactional solo funcionan si Spring gestiona el ciclo de vida de la clase.
+    - Al ponerle @Service o @Component, le dices a Spring: "Oye, cuando inicies, crea una instancia de esta clase, envuélvela en tu Proxy mágico y fíjate si tiene anotaciones de Resilience4j".
 ## JWT (JSON Web Token)
 - Es un estándar abierto (RFC 7519) que define un formato compacto y autónomo para transmitir información segura entre partes como un objeto JSON. Los JWT se utilizan comúnmente para la autenticación y autorización en aplicaciones web y móviles, permitiendo a los usuarios acceder a recursos protegidos de manera segura.
     ### Estructura de un JWT
