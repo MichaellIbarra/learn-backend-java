@@ -60,3 +60,29 @@ Finalmente, depende también de la arquitectura global y cómo las peticiones at
 - **Spring MVC**: Es la forma convencional y bloqueante basada en hilos. Conecta de forma típica a tecnologías (JDBC normal, Hibernate habitual), deteniendo el sub-proceso de la capa base de lectura por las respuestas.
 - **Spring Reactive (WebFlux)**: Requiere ecosistemas **No Bloqueantes**. Se conecta devolviendo Streams Reactivos (`Mono` o `Flux`). Para que sirva totalmente es necesario usar capas de base de datos preparadas, como por ejemplo *Spring Data Reactive MongoDB* o *Reactive Redis*, previniendo el ahogo de servidor frente a operaciones intensivas bajo extrema peticiones en tiempo real.
 
+## DTO (Data Transfer Object)
+Un DTO es un objeto simple que se utiliza para transferir datos entre diferentes capas de una aplicación, especialmente entre la capa de presentación (Controladores) y la capa de negocio (Servicios). Los DTOs son útiles para encapsular los datos que se necesitan en una operación específica, evitando exponer directamente las entidades del dominio o modelos de base de datos.
+
+- **¿Por qué usar DTOs?**
+  - **Encapsulación**: Permiten ocultar detalles internos de las entidades del dominio, exponiendo solo lo necesario.
+  - **Validación**: Facilitan la validación de datos de entrada antes de que lleguen a la lógica de negocio.
+  - **Flexibilidad**: Permiten adaptar la estructura de los datos a las necesidades específicas de cada operación o endpoint, sin afectar el modelo de dominio.
+  - **Desacoplamiento**: Ayudan a desacoplar la capa de presentación de la capa de persistencia, permitiendo cambios en una sin afectar a la otra.
+
+## Proyecto Spring MVC
+- Funciona bajo un modelo tradicional de servidor bloqueante, Thread-per-request (cada petición se maneja en un hilo separado).
+- Ideal para aplicaciones con cargas moderadas y donde la latencia no es crítica.
+### Dependencias típicas:
+- Spring Web (spring-boot-starter-web): Proporciona las herramientas necesarias para construir aplicaciones web tradicionales con Spring MVC.
+- Spring Data JPA (spring-boot-starter-data-jpa): Para la capa de persistencia con bases de datos relacionales, su función es facilitar el acceso a datos mediante JPA y Hibernate.
+- Base de datos (MySQL, PostgreSQL, etc.): Para almacenar los datos de la aplicación.
+- Spring Boot DevTools (spring-boot-devtools): Para facilitar el desarrollo con recarga automática y otras herramientas útiles.
+- Lombok (lombok): Para reducir el código boilerplate en las entidades y DTOs, generando automáticamente getters, setters, constructores, etc.
+- Spring Boot Actuator (spring-boot-starter-actuator): Para monitorear y gestionar la aplicación en producción.
+### Project Metadata:
+- Group: está relacionado con el paquete base de la aplicación, comúnmente se usa un formato de dominio invertido (com.ejemplo), aunque no es obligatorio. Es una forma de organizar el código y evitar conflictos de nombres con otros proyectos.
+- Artifact: es el nombre del proyecto o módulo, que se convertirá en el nombre del archivo JAR generado.
+- Name: es el nombre del proyecto, que puede ser igual al artifact.
+- Description: una breve descripción del proyecto.
+- Package name: el nombre del paquete base para las clases de la aplicación, generalmente coincide con el group y es utilizado para organizar el código fuente de la aplicación.
+- Packaging: el formato de empaquetado, comúnmente JAR para aplicaciones Spring Boot por que se ejecutan como aplicaciones independientes y WAR para aplicaciones que se despliegan en servidores de aplicaciones tradicionales. Ejmplo: `jar` o `war`: .jar es el formato más común para aplicaciones Spring Boot, ya que permite ejecutar la aplicación directamente con `java -jar`. El formato .war se utiliza cuando se desea desplegar la aplicación en un servidor de aplicaciones como Tomcat o WildFly.
