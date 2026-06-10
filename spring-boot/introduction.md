@@ -95,3 +95,8 @@ servicios backend. Utiliza Spring Cloud Gateway para enrutar las solicitudes a l
 - Spring Reactive Web (spring-boot-starter-webflux): Para construir aplicaciones web reactivas, necesario para el funcionamiento de Spring Cloud Gateway, por su naturaleza no bloqueante.
 - Cloud Discovery Client (spring-cloud-starter-netflix-eureka-client): Para registrar el gateway en un servicio de descubrimiento como Eureka, permitiendo que otros servicios lo encuentren y se comuniquen con él.
 - Cloud Bootstrap (spring-cloud-starter-bootstrap): Para cargar la configuración del gateway desde un servidor de configuración centralizado, como Spring Cloud Config Server, sirve para centralizar la configuración de la aplicación y facilitar su gestión.
+
+### Proyecto Config Server
+- Es un proyecto que actúa como un servidor de configuración centralizado para todas las aplicaciones en el ecosistema. Utiliza Spring Cloud Config Server para proporcionar una fuente central de configuración, permitiendo que las aplicaciones cliente obtengan su configuración de manera dinámica y centralizada.
+### Dependencias típicas:
+- Spring Cloud Config Server (spring-cloud-config-server): Proporciona las herramientas necesarias para construir un servidor de configuración centralizado con Spring Cloud.
