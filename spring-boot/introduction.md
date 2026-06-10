@@ -86,3 +86,12 @@ Un DTO es un objeto simple que se utiliza para transferir datos entre diferentes
 - Description: una breve descripción del proyecto.
 - Package name: el nombre del paquete base para las clases de la aplicación, generalmente coincide con el group y es utilizado para organizar el código fuente de la aplicación.
 - Packaging: el formato de empaquetado, comúnmente JAR para aplicaciones Spring Boot por que se ejecutan como aplicaciones independientes y WAR para aplicaciones que se despliegan en servidores de aplicaciones tradicionales. Ejmplo: `jar` o `war`: .jar es el formato más común para aplicaciones Spring Boot, ya que permite ejecutar la aplicación directamente con `java -jar`. El formato .war se utiliza cuando se desea desplegar la aplicación en un servidor de aplicaciones como Tomcat o WildFly.
+
+## Proyecto Gateway
+- Es un proyecto que actúa como un punto de entrada único para todas las solicitudes a los
+servicios backend. Utiliza Spring Cloud Gateway para enrutar las solicitudes a los servicios correspondientes, proporcionando funcionalidades como balanceo de carga, autenticación, y manejo de errores.
+### Dependencias típicas:
+- Spring Cloud Gateway (spring-cloud-starter-gateway): Proporciona las herramientas necesarias para construir un gateway de API con Spring Cloud.
+- Spring Reactive Web (spring-boot-starter-webflux): Para construir aplicaciones web reactivas, necesario para el funcionamiento de Spring Cloud Gateway, por su naturaleza no bloqueante.
+- Cloud Discovery Client (spring-cloud-starter-netflix-eureka-client): Para registrar el gateway en un servicio de descubrimiento como Eureka, permitiendo que otros servicios lo encuentren y se comuniquen con él.
+- Cloud Bootstrap (spring-cloud-starter-bootstrap): Para cargar la configuración del gateway desde un servidor de configuración centralizado, como Spring Cloud Config Server, sirve para centralizar la configuración de la aplicación y facilitar su gestión.

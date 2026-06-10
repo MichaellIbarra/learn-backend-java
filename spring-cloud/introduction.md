@@ -204,8 +204,8 @@ spec:
 
 
 ## Términos comunes
-- asíncrono: que no ocurre al mismo proceso o tiempo.
-- síncrono: que ocurre al mismo proceso o tiempo.
+- asíncrono: que no ocurre de manera simultánea o en el mismo tiempo, permitiendo que otras operaciones continúen mientras se espera una respuesta. 
+- síncrono: que ocurre de manera simultánea o en el mismo tiempo.
 - latencia: retraso en la comunicación o procesamiento de datos.
 - tolerancia a fallos: capacidad de un sistema para continuar operando correctamente en presencia de fallos o errores.
 - escalabilidad: capacidad de un sistema para adaptarse a un aumento de carga.
