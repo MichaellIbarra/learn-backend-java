@@ -100,3 +100,9 @@ servicios backend. Utiliza Spring Cloud Gateway para enrutar las solicitudes a l
 - Es un proyecto que actúa como un servidor de configuración centralizado para todas las aplicaciones en el ecosistema. Utiliza Spring Cloud Config Server para proporcionar una fuente central de configuración, permitiendo que las aplicaciones cliente obtengan su configuración de manera dinámica y centralizada.
 ### Dependencias típicas:
 - Spring Cloud Config Server (spring-cloud-config-server): Proporciona las herramientas necesarias para construir un servidor de configuración centralizado con Spring Cloud.
+
+### Proyecto Resilience4j
+- Es un proyecto que implementa patrones de resiliencia como Circuit Breaker, Retry, Rate Limiter, y Bulkhead para mejorar la tolerancia a fallos en las aplicaciones. Utiliza la biblioteca Resilience4j para proporcionar estas funcionalidades de resiliencia.
+### Dependencias típicas:
+- Resilience4j Spring Boot Starter (resilience4j-spring-boot2): Proporciona las herramientas necesarias para integrar Resilience4j con aplicaciones Spring Boot, facilitando la implementación de patrones de resiliencia en la aplicación.
+- Spring Boot Actuator (spring-boot-starter-actuator): Para monitorear y gestionar la aplicación, especialmente útil para observar el estado de los circuit breakers y otras métricas de resiliencia.

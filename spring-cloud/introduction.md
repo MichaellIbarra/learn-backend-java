@@ -149,7 +149,7 @@ spec:
     - Config Client: Las aplicaciones que consumen las configuraciones desde el Config Server.
     - Repositorio de configuración: El lugar donde se almacenan las configuraciones (por ejemplo, un repositorio Git).
 ## Patrón de diseño Circuit Breaker
-- Es un patrón muy parecido a un fusible, el cual se funde para evitar que una descarga eléctrica dañe un circuito. En el contexto de los microservicios, actúa como un interruptor que "rompe" la comunicación entre servicios cuando se detectan fallos repetidos o tiempos de respuesta lentos, evitando así que un fallo en un servicio afecte a toda la aplicación, este interruptor puede "cerrarse" nuevamente cuando el servicio afectado se recupera y vuelve a estar disponible.
+- Es un patrón de diseño utilizado en arquitecturas distribuidas para mejorar la resiliencia y la tolerancia a fallos de las aplicaciones. El patrón Circuit Breaker actúa como un interruptor que se abre cuando se detectan fallos repetidos en una llamada a un servicio, evitando que el sistema realice llamadas adicionales a ese servicio hasta que se recupere, lo que ayuda a prevenir la propagación de fallos y mejora la estabilidad del sistema.
     ### Origenes del patrón Circuit Breaker
     - Uno de los problemas más común en arquitectura distribuidas es que, algunos de los componentes comiencen a fallar, lo que esto puede implicar desde que dejemos realizar ventas, hasta detener la operación por completo, por lo que tener un plan B en caso de que algo falle siempre es recomendable, sobre todo en procesos críticos.
     ### Funcionalidades principales del patrón Circuit Breaker
