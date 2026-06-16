@@ -106,3 +106,13 @@ servicios backend. Utiliza Spring Cloud Gateway para enrutar las solicitudes a l
 ### Dependencias típicas:
 - Resilience4j Spring Boot Starter (resilience4j-spring-boot2): Proporciona las herramientas necesarias para integrar Resilience4j con aplicaciones Spring Boot, facilitando la implementación de patrones de resiliencia en la aplicación.
 - Spring Boot Actuator (spring-boot-starter-actuator): Para monitorear y gestionar la aplicación, especialmente útil para observar el estado de los circuit breakers y otras métricas de resiliencia.
+
+### Proyecto Auth Service
+- Es un proyecto que implementa un servicio de autenticación y autorización para el ecosistema. Utiliza Spring Security para proporcionar funcionalidades de seguridad, como autenticación basada en JWT (JSON Web Tokens) y autorización basada en roles.
+### Dependencias típicas:
+- Spring Security (spring-boot-starter-security): Proporciona las herramientas necesarias para implementar seguridad en la aplicación, incluyendo autenticación y autorización.
+- JWT (jjwt): Para manejar la generación y validación de JSON Web Tokens, que se utilizan para la autenticación y autorización en la aplicación.
+- Spring Boot Actuator (spring-boot-starter-actuator): Para monitorear y gestionar la aplicación, especialmente útil para observar el estado de la seguridad y las métricas relacionadas.
+- Spring Data JPA (spring-boot-starter-data-jpa): Para la capa de persistencia, si se necesita almacenar información de usuarios, roles, o tokens en una base de datos relacional.
+- Base de datos (MySQL, PostgreSQL, etc.): Para almacenar los datos relacionados con la autenticación y autorización, como usuarios, roles, y tokens.
+- Lombok (lombok): Para reducir el código boilerplate en las entidades y DTOs relacionados con la seguridad, generando automáticamente getters, setters, constructores, etc.
