@@ -113,6 +113,20 @@ docker run -d \
 **Conectar:**
 ```bash
 mongosh "mongodb://admin:matichelo17@localhost:27017"
+
+# Conexión en docker
+docker exec -it mongo-container mongosh -u admin -p matichelo17
+
+# Crear database y colección
+use mi_db
+
+# Mostrar bases de datos
+show dbs
+
+# Mostrar colecciones
+show collections
+
+
 ```
 
 **Comandos básicos MongoDB:**
