@@ -79,6 +79,8 @@ Un DTO es un objeto simple que se utiliza para transferir datos entre diferentes
 - Spring Boot DevTools (spring-boot-devtools): Para facilitar el desarrollo con recarga automática y otras herramientas útiles.
 - Lombok (lombok): Para reducir el código boilerplate en las entidades y DTOs, generando automáticamente getters, setters, constructores, etc.
 - Spring Boot Actuator (spring-boot-starter-actuator): Para monitorear y gestionar la aplicación en producción.
+- Spring Data Mongodb (spring-boot-starter-data-mongodb): Si se requiere trabajar con bases de datos NoSQL como MongoDB, esta dependencia facilita la integración y el acceso a los datos, diferencia entre dependencia sin spring data de MongoDB y la que tiene Spring Data MongoDB, la primera es para trabajar con MongoDB de manera directa, mientras que la segunda proporciona una capa de abstracción adicional que facilita el trabajo con MongoDB en aplicaciones Spring Boot.
+
 ### Project Metadata:
 - Group: está relacionado con el paquete base de la aplicación, comúnmente se usa un formato de dominio invertido (com.ejemplo), aunque no es obligatorio. Es una forma de organizar el código y evitar conflictos de nombres con otros proyectos.
 - Artifact: es el nombre del proyecto o módulo, que se convertirá en el nombre del archivo JAR generado.
@@ -86,13 +88,22 @@ Un DTO es un objeto simple que se utiliza para transferir datos entre diferentes
 - Description: una breve descripción del proyecto.
 - Package name: el nombre del paquete base para las clases de la aplicación, generalmente coincide con el group y es utilizado para organizar el código fuente de la aplicación.
 - Packaging: el formato de empaquetado, comúnmente JAR para aplicaciones Spring Boot por que se ejecutan como aplicaciones independientes y WAR para aplicaciones que se despliegan en servidores de aplicaciones tradicionales. Ejmplo: `jar` o `war`: .jar es el formato más común para aplicaciones Spring Boot, ya que permite ejecutar la aplicación directamente con `java -jar`. El formato .war se utiliza cuando se desea desplegar la aplicación en un servidor de aplicaciones como Tomcat o WildFly.
+#### Project Metadata Example:
+```yaml
+group: com.ejemplo
+artifact: mi-aplicacion
+name: Mi Aplicación
+description: Una aplicación de ejemplo con Spring Boot
+package name: com.ejemplo.miaplicacion
+packaging: jar
+```
 
 ## Proyecto Gateway
 - Es un proyecto que actúa como un punto de entrada único para todas las solicitudes a los
 servicios backend. Utiliza Spring Cloud Gateway para enrutar las solicitudes a los servicios correspondientes, proporcionando funcionalidades como balanceo de carga, autenticación, y manejo de errores.
 ### Dependencias típicas:
 - Spring Cloud Gateway (spring-cloud-starter-gateway): Proporciona las herramientas necesarias para construir un gateway de API con Spring Cloud.
-- Spring Reactive Web (spring-boot-starter-webflux): Para construir aplicaciones web reactivas, necesario para el funcionamiento de Spring Cloud Gateway, por su naturaleza no bloqueante.
+- Spring Reactive Web (spring-boot-starter-webflux): Para construir aplicac iones web reactivas, necesario para el funcionamiento de Spring Cloud Gateway, por su naturaleza no bloqueante.
 - Cloud Discovery Client (spring-cloud-starter-netflix-eureka-client): Para registrar el gateway en un servicio de descubrimiento como Eureka, permitiendo que otros servicios lo encuentren y se comuniquen con él.
 - Cloud Bootstrap (spring-cloud-starter-bootstrap): Para cargar la configuración del gateway desde un servidor de configuración centralizado, como Spring Cloud Config Server, sirve para centralizar la configuración de la aplicación y facilitar su gestión.
 
@@ -116,3 +127,4 @@ servicios backend. Utiliza Spring Cloud Gateway para enrutar las solicitudes a l
 - Spring Data JPA (spring-boot-starter-data-jpa): Para la capa de persistencia, si se necesita almacenar información de usuarios, roles, o tokens en una base de datos relacional.
 - Base de datos (MySQL, PostgreSQL, etc.): Para almacenar los datos relacionados con la autenticación y autorización, como usuarios, roles, y tokens.
 - Lombok (lombok): Para reducir el código boilerplate en las entidades y DTOs relacionados con la seguridad, generando automáticamente getters, setters, constructores, etc.
+
